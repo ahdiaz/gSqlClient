@@ -1,0 +1,11 @@
+Installation:
+
+* Extract the content of the tarball into $HOME/.gnome2/gedit/plugins/ directory.
+* (Re)start Gedit.
+* Go to Edit->Preferences->Plugins and check the box for gSqlClient.
+
+Usage:
+
+Create a new document and press CTRL+ALT+C combination, fill the form and press "Connect" button.
+Write some queries separated by new lines, put the cursor over one of them and press CTRL+ENTER,
+you should see a panel with the resultset.
