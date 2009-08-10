@@ -1,11 +1,24 @@
-Installation:
+Description
 
-* Extract the content of the tarball into $HOME/.gnome2/gedit/plugins/ directory.
-* (Re)start Gedit.
-* Go to Edit->Preferences->Plugins and check the box for gSqlClient.
+gSqlClient is a Python plugin that allows to query MySQL databases from Gedit.
+It could be a replacement for the MySQL console (someday).
 
-Usage:
+Installation
 
-Create a new document and press CTRL+ALT+C combination, fill the form and press "Connect" button.
-Write some queries separated by new lines, put the cursor over one of them and press CTRL+ENTER,
-you should see a panel with the resultset.
+   1. Extract the content of the tarball under $HOME/.gnome2/gedit/plugins/ directory.
+   2. (Re)start Gedit.
+   3. Go to Edit->Preferences->Plugins and check the box for gSqlClient. 
+
+Usage
+
+Create a new document and press CTRL+ALT+C, you will see the connection dialog. Fill the form and press "Connect" button.
+Write some queries and be sure to separate them by empty lines, put the cursor over one of the queries and
+press CTRL+ENTER, you should see a panel with the resultset. If you want to disconnect from the server press CTRL+ALT+C
+again and you will see the "Disconnect" button.
+
+The query separator is an empty line so you don't need a semicolon after the query, this way allows you to have many
+queries on the same document. If you want to execute only part of a query you can select the part you are interested
+on and press CTRL+ENTER, the plugin will only execute the selection.
+
+Remember that you can have one diferent connection on each Gedit tab so you can query diferent databases from the
+same instance of Gedit. 

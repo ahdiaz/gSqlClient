@@ -19,6 +19,7 @@
 """ This plugin enables Gedit as a MySQL client. """
 
 import os
+import time
 import gedit
 import gtk
 import gtk.glade
@@ -31,11 +32,9 @@ class GSqlClientPlugin(gedit.Plugin):
 
 	def activate(self, window):
 		""" Activate plugin. """
-
-		callback = self._on_window_tab_added
-		id_1 = window.connect("tab-added", callback)
-		callback = self._on_window_tab_removed
-		id_2 = window.connect("tab-removed", callback)
+	
+		id_1 = window.connect("tab-added", self._on_window_tab_added)
+		id_2 = window.connect("tab-removed", self._on_window_tab_removed)
 		window.set_data(self.__class__.__name__, (id_1, id_2))
 		 
 		views = window.get_views()
@@ -44,13 +43,14 @@ class GSqlClientPlugin(gedit.Plugin):
     
 	def deactivate(self, window):
 		""" Deactivate plugin. """
-		
+		"""
 		widgets.extend(window.get_views())
 		name = self.__class__.__name__
 		for widget in widgets:
 			for handler_id in widget.get_data(name):
 				widget.disconnect(handler_id)
 			widget.set_data(name, None)
+		"""
 
 	def _on_window_tab_added(self, window, tab):
 		""" Connect to signals of the view in tab. """
@@ -65,16 +65,11 @@ class GSqlClientPlugin(gedit.Plugin):
 		""" Disconnects signals of the view in tab."""
 		
 		self._db_disconnect(tab.get_view(), window)
-		
-		panel = window.get_bottom_panel()
-		sw = tab.get_view().get_data('resultset_panel')
-		panel.remove_item(sw)
 
 	def _connect_view(self, view, window):
 		""" Connect to view's editing signals. """
 
-		callback = self._on_view_key_press_event
-		id_1 = view.connect("key-press-event", callback, window)
+		id_1 = view.connect("key-press-event", self._on_view_key_press_event, window)
 		view.set_data(self.__class__.__name__, (id_1))
 
 	def _on_view_key_press_event(self, view, event, window):
@@ -99,36 +94,53 @@ class GSqlClientPlugin(gedit.Plugin):
 		return False
 	
 	def _db_connect(self, view, window):
-	
-		db = view.get_data('db_connection')
-		
+			
 		gladeFile = os.path.join(os.path.dirname(__file__), "gsqlclient.glade")
-		self.tree = gtk.glade.XML(gladeFile)
-		self.tree.signal_autoconnect(self)
-		self._dialog = self.tree.get_widget('connectionDialog')
-		self._dialog.set_transient_for(window)
-		if db is None:
-			self.tree.get_widget('btnDisconnect').hide()
+		xmltree = gtk.glade.XML(gladeFile)
+		xmltree.signal_autoconnect(self)
+		connection_dialog = xmltree.get_widget('connectionDialog')
+		connection_dialog.set_transient_for(window)
 		
-		result = self._dialog.run()
-						
-		if result == 1:
-			host = self.tree.get_widget('txtHost').get_text()
-			user = self.tree.get_widget('txtUser').get_text()
-			passwd = self.tree.get_widget('txtPassword').get_text()
-			schema = self.tree.get_widget('txtSchema').get_text()
+		db = view.get_data('db_connection')
+		if db is None:
+			xmltree.get_widget('btnDisconnect').hide()
+
+		exit = False
+		while not exit:
+			result = connection_dialog.run()
+			exit = True
 			
-			if db is not None:
-				self._db_disconnect(view, window)
+			if result == 1:
+				host = xmltree.get_widget('txtHost').get_text()
+				user = xmltree.get_widget('txtUser').get_text()
+				passwd = xmltree.get_widget('txtPassword').get_text()
+				schema = xmltree.get_widget('txtSchema').get_text()
 				
-			db = MySQLdb.connect(host=host, user=user, passwd=passwd, db=schema)
-			view.set_data('db_connection', db)
-			self._create_resultset_view(view, window)
+				if db is not None:
+					self._db_disconnect(view, window)
+				
+				try:
+					db = MySQLdb.connect(host=host, user=user, passwd=passwd, db=schema)
+					view.set_data('db_connection', db)
+					panel = window.get_bottom_panel()
+					rset = ResultsetPanel(panel)
+					view.set_data('resultset_panel', rset)
+					panel.add_item(rset, 'Resultset', gtk.Image())
+					
+				except MySQLdb.Error, e:
+					error_dialog = gtk.Dialog(title="Connection error", parent=window, flags=gtk.DIALOG_MODAL, buttons=None)
+					error_dialog.add_button("Close", gtk.RESPONSE_CLOSE)
+					label = gtk.Label("\n  Error %d: %s  \n" % (e.args[0], e.args[1]))
+					error_dialog.vbox.pack_start(label, True, True, 0)
+					label.show()
+					error_dialog.run()
+					error_dialog.destroy()
+					exit = False
+				
+			if result == 2 and db is not None:
+				self._db_disconnect(view, window)
 			
-		if result == 2 and db is not None:
-			self._db_disconnect(view, window)
-			
-		self._dialog.destroy()
+		connection_dialog.destroy()
 	
 	def _db_disconnect(self, view, window):
 	
@@ -144,12 +156,20 @@ class GSqlClientPlugin(gedit.Plugin):
 		db = view.get_data('db_connection')
 		if db is None: return
 		
-		query = self._get_query(view)		
-		cursor = db.cursor(MySQLdb.cursors.DictCursor)
-		cursor.execute(query)		
-		self._prepare_resultset_view(view, window, cursor)
-		
-		cursor.close()
+		sw = view.get_data('resultset_panel')
+		query = self._get_query(view)
+		cursor = db.cursor(MySQLdb.cursors.Cursor)
+		try:
+			t1 = time.time()
+			cursor.execute(query)
+			execution_time = time.time() - t1
+			if cursor.description is not None:
+				sw.show_resultset(cursor, execution_time)
+			else:
+				sw.show_information("%s rows affected in %s" % (cursor.rowcount, execution_time))
+			cursor.close()
+		except MySQLdb.Error, e:
+			sw.show_information("Error %d: %s" % (e.args[0], e.args[1]))
 
 	def _get_query(self, view):
 		
@@ -168,71 +188,111 @@ class GSqlClientPlugin(gedit.Plugin):
 		
 		return query
 
-	def _prepare_resultset_view(self, view, window, cursor):
-
-		sw = view.get_data('resultset_panel')
-		panel = window.get_bottom_panel()
-		panel.set_property("visible", True)
-		panel.activate_item(sw)		
-		treeview = sw.get_children()
-		treeview = treeview[0]
-		treeview.set_model(None)
-
-		cols = len(treeview.get_columns())
-		while (cols > 0):
-			 cols = treeview.remove_column(treeview.get_column(0))
-		
-		column_names = []
-		column_types = []
-		new_model = None
-		
-		while (1):
-			row = cursor.fetchone()
-			if row == None:
-				break
-#			print row, row.values()
-			if new_model == None:
-				for key, value in row.iteritems():
-					column_names.append(key)
-					column_types.append(str)
-				column_types = tuple(column_types)
-				new_model = gtk.ListStore(*column_types)
-			
-			new_model.append(row.values())
-
-		
-		tvcolumn = [None] * len(column_names)
-		for n in range(0, len(column_names)):
-			cell = gtk.CellRendererText()
-			tvcolumn[n] = gtk.TreeViewColumn(column_names[n], cell, text=n+1)
-			tvcolumn[n].set_data('column_id', n)
-			tvcolumn[n].set_cell_data_func(cell, self.field_value)
-			treeview.append_column(tvcolumn[n])
-		
-		treeview.set_model(new_model)
-		treeview.show_all()
-
-	def field_value(self, column, cell, model, iter):
-		pos = column.cell_get_position(cell)
-		cell.set_property('text', model.get_value(iter, column.get_data('column_id')))
-		return
-
-	def _create_resultset_view(self, view, window):
-
-		sw = gtk.ScrolledWindow()
-		sw.set_policy(gtk.POLICY_AUTOMATIC, gtk.POLICY_AUTOMATIC)
-		
-		treeview = gtk.TreeView()		
-		sw.add(treeview)
-		sw.show_all()
-
-		view.set_data('resultset_panel', sw)
-
-		panel = window.get_bottom_panel()
-		panel.add_item(sw, 'Resultset', gtk.Image())
-
 	def _destroy_resultset_view(self, view, window):
 		sw = view.get_data('resultset_panel')
 		panel = window.get_bottom_panel()
 		panel.remove_item(sw)
 		sw.destroy()
+		view.set_data('resultset_panel', None)
+
+
+class ResultsetPanel(gtk.VBox):
+
+	def __init__(self, panel):
+		
+		gtk.VBox.__init__(self)
+		self._panel = panel
+		
+		self._treeview = ResultsetTreeView()
+		self._treeview.set_grid_lines(gtk.TREE_VIEW_GRID_LINES_HORIZONTAL)
+		
+		self._textview1 = gtk.TextView()
+		self._textview1.set_editable(False)
+		self._textview1.set_left_margin(5)
+		self._textview1.set_right_margin(5)
+		
+		self._sw = gtk.ScrolledWindow()
+		self._sw.set_policy(gtk.POLICY_AUTOMATIC, gtk.POLICY_AUTOMATIC)
+		self._sw.add(self._treeview)
+		self._sw.show_all()
+		
+		self._textview2 = gtk.TextView()
+		self._textview2.set_editable(False)
+		self._textview1.set_left_margin(5)
+		self._textview1.set_right_margin(5)
+
+	def _clean(self):
+		children = self.get_children()
+		for child in children:
+			self.remove(child)
+	
+	def _activate(self):
+		self._panel.set_property("visible", True)
+		self._panel.activate_item(self)
+		
+	def show_resultset(self, cursor, execution_time):
+		self._clean()
+		self._treeview.load_cursor(cursor)
+		buff = self._textview1.get_buffer()
+		buff.set_text("%s rows fetched in %s" % (cursor.rowcount, execution_time))
+		self.pack_start(self._sw, True)
+		self.pack_start(self._textview1, False)
+		self.show_all()
+		self._activate()
+
+	def show_information(self, message):
+		self._clean()
+		buff = self._textview2.get_buffer()
+		buff.set_text(message)
+		self.add(self._textview2)
+		self.show_all()
+		self._activate()	
+
+class ResultsetTreeView(gtk.TreeView):
+
+	def __init__(self):
+		gtk.TreeView.__init__(self)
+
+	def load_cursor(self, cursor):
+
+		self.set_model(None)
+
+		cols = len(self.get_columns())
+		while (cols > 0):
+			 cols = self.remove_column(self.get_column(0))
+		
+		column_types = []
+		tvcolumn = [None] * len(cursor.description)
+		
+		for n in range(0, len(cursor.description)):
+			
+			d = cursor.description[n]
+			column_name = d[0]
+			column_types.append(str)
+			
+			cell = gtk.CellRendererText()
+			cell.set_property("xpad", 10)
+			tvcolumn[n] = gtk.TreeViewColumn(column_name, cell, text=n+1)
+			tvcolumn[n].set_resizable(True)
+			tvcolumn[n].set_data('column_id', n)
+			tvcolumn[n].set_cell_data_func(cell, self._cell_value)
+			self.append_column(tvcolumn[n])
+			
+		column_types = tuple(column_types)
+		new_model = gtk.ListStore(*column_types)
+		
+		while (1):
+			row = cursor.fetchone()
+			if row == None:
+				break
+			new_model.append(row)
+		
+		self.set_model(new_model)
+		self.set_reorderable(False)
+		self.show_all()
+
+	def _cell_value(self, column, cell, model, iter):
+		pos = column.cell_get_position(cell)
+		cell.set_property('text', model.get_value(iter, column.get_data('column_id')))
+		return
+		
