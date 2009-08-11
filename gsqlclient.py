@@ -26,21 +26,21 @@ import gtk.glade
 import MySQLdb
 
 class GSqlClientPlugin(gedit.Plugin):
-	
+
 	def __init__(self):
 		gedit.Plugin.__init__(self)
 
 	def activate(self, window):
 		""" Activate plugin. """
-	
+
 		id_1 = window.connect("tab-added", self._on_window_tab_added)
 		id_2 = window.connect("tab-removed", self._on_window_tab_removed)
 		window.set_data(self.__class__.__name__, (id_1, id_2))
-		 
+
 		views = window.get_views()
 		for view in views:
 			self._connect_view(view, window)
-    
+
 	def deactivate(self, window):
 		""" Deactivate plugin. """
 		"""
@@ -60,10 +60,10 @@ class GSqlClientPlugin(gedit.Plugin):
 		handler_id = view.get_data(name)
 		if handler_id is None:
 			self._connect_view(view, window)
-	
+
 	def _on_window_tab_removed(self, window, tab):
 		""" Disconnects signals of the view in tab."""
-		
+
 		self._db_disconnect(tab.get_view(), window)
 
 	def _connect_view(self, view, window):
@@ -74,33 +74,33 @@ class GSqlClientPlugin(gedit.Plugin):
 
 	def _on_view_key_press_event(self, view, event, window):
 		""" Manage key events actions. """
-		
+
 		if not (event.state & gtk.gdk.CONTROL_MASK):
 			return False
 
 		# CTRL + Return
 		if event.keyval == gtk.keysyms.Return:
-			self._db_query(view, window)
+			self._execute_query(view, window)
 			return True
-		
+
 		if  not (event.state & gtk.gdk.MOD1_MASK):
 			return False
-		
+
 		# CTRL + ALT + C
-		if event.keyval == gtk.keysyms.c:			
-			self._db_connect(view, window)			
+		if event.keyval == gtk.keysyms.c:
+			self._db_connect(view, window)
 			return True
-		
+
 		return False
-	
+
 	def _db_connect(self, view, window):
-			
+
 		gladeFile = os.path.join(os.path.dirname(__file__), "gsqlclient.glade")
 		xmltree = gtk.glade.XML(gladeFile)
 		xmltree.signal_autoconnect(self)
 		connection_dialog = xmltree.get_widget('connectionDialog')
 		connection_dialog.set_transient_for(window)
-		
+
 		db = view.get_data('db_connection')
 		if db is None:
 			xmltree.get_widget('btnDisconnect').hide()
@@ -109,16 +109,16 @@ class GSqlClientPlugin(gedit.Plugin):
 		while not exit:
 			result = connection_dialog.run()
 			exit = True
-			
+
 			if result == 1:
 				host = xmltree.get_widget('txtHost').get_text()
 				user = xmltree.get_widget('txtUser').get_text()
 				passwd = xmltree.get_widget('txtPassword').get_text()
 				schema = xmltree.get_widget('txtSchema').get_text()
-				
+
 				if db is not None:
 					self._db_disconnect(view, window)
-				
+
 				try:
 					db = MySQLdb.connect(host=host, user=user, passwd=passwd, db=schema)
 					view.set_data('db_connection', db)
@@ -126,7 +126,7 @@ class GSqlClientPlugin(gedit.Plugin):
 					rset = ResultsetPanel(panel)
 					view.set_data('resultset_panel', rset)
 					panel.add_item(rset, 'Resultset', gtk.Image())
-					
+
 				except MySQLdb.Error, e:
 					error_dialog = gtk.Dialog(title="Connection error", parent=window, flags=gtk.DIALOG_MODAL, buttons=None)
 					error_dialog.add_button("Close", gtk.RESPONSE_CLOSE)
@@ -136,28 +136,37 @@ class GSqlClientPlugin(gedit.Plugin):
 					error_dialog.run()
 					error_dialog.destroy()
 					exit = False
-				
+
 			if result == 2 and db is not None:
 				self._db_disconnect(view, window)
-			
+
 		connection_dialog.destroy()
-	
+
 	def _db_disconnect(self, view, window):
-	
+
 		db = view.get_data('db_connection')
 		if db is not None:
 			db.close()
 			self._destroy_resultset_view(view, window)
 			view.set_data('db_connection', None)
 
-	def _db_query(self, view, window):
+	def _execute_query(self, view, window):
+		buff = view.get_buffer()
+		q = QueryParser(buff)
+		query = q.get_current_query()
+		if query is not None:
+			self._db_query(view, query)
+
+	def _execute_script(self, view, window):
+		""" Run document as script """
+
+	def _db_query(self, view, query):
 		""" Executes a SQL query """
 
 		db = view.get_data('db_connection')
 		if db is None: return
-		
+
 		sw = view.get_data('resultset_panel')
-		query = self._get_query(view)
 		cursor = db.cursor(MySQLdb.cursors.Cursor)
 		try:
 			t1 = time.time()
@@ -171,23 +180,6 @@ class GSqlClientPlugin(gedit.Plugin):
 		except MySQLdb.Error, e:
 			sw.show_information("Error %d: %s" % (e.args[0], e.args[1]))
 
-	def _get_query(self, view):
-		
-		buff = view.get_buffer()
-		selection = buff.get_selection_bounds()
-		if len(selection) == 0:
-			its = buff.get_iter_at_mark(buff.get_insert())
-			ite = its.copy()
-			its.set_line_offset(0)
-			ite.forward_to_line_end()
-			selection = (its, ite)
-
-		its = selection[0]
-		ite = selection[1]
-		query = its.get_text(ite)
-		
-		return query
-
 	def _destroy_resultset_view(self, view, window):
 		sw = view.get_data('resultset_panel')
 		panel = window.get_bottom_panel()
@@ -195,27 +187,89 @@ class GSqlClientPlugin(gedit.Plugin):
 		sw.destroy()
 		view.set_data('resultset_panel', None)
 
+class QueryParser():
+
+	def __init__(self, buffer):
+		self._buffer = buffer
+
+	def _get_iter_at_cursor(self):
+		iter = self._buffer.get_iter_at_mark(self._buffer.get_insert())
+		return iter
+
+	def get_line(self, its):
+		ite = its.copy()
+		its.set_line_offset(0)
+		ite.forward_to_line_end()
+		if its.get_line() != ite.get_line():
+			return ""
+		line = its.get_text(ite).strip()
+		#print "\n(%s) - %s\n" % (len(line), line)
+		#print "its = %s, ite = %s\n" % (its.get_line(), ite.get_line())
+		return line
+
+	def get_selection(self):
+		query = None
+		selection = self._buffer.get_selection_bounds()
+		if len(selection) > 0:
+			its = selection[0]
+			ite = selection[1]
+			query = its.get_text(ite)
+
+		return query
+
+	def get_current_query(self):
+
+		selection = self.get_selection()
+		if selection is not None:
+			return selection
+
+		query = []
+		its = self._get_iter_at_cursor()
+		line = self.get_line(its)
+		while its.backward_line() and len(line) > 0:
+			query.append(line)
+			line = self.get_line(its)
+		query.reverse()
+
+		its = self._get_iter_at_cursor()
+		while 1:
+			cont = its.forward_line()
+			line = self.get_line(its)
+			if len(line) == 0:
+				break
+			query.append(line)
+			if not cont:
+				break
+
+		query = str.join("\n", query).strip()
+		if len(query) == 0:
+			query = None
+		#print query
+		return query
+
+	def get_all_queries(self):
+		queries = ()
 
 class ResultsetPanel(gtk.VBox):
 
 	def __init__(self, panel):
-		
+
 		gtk.VBox.__init__(self)
 		self._panel = panel
-		
+
 		self._treeview = ResultsetTreeView()
 		self._treeview.set_grid_lines(gtk.TREE_VIEW_GRID_LINES_HORIZONTAL)
-		
+
 		self._textview1 = gtk.TextView()
 		self._textview1.set_editable(False)
 		self._textview1.set_left_margin(5)
 		self._textview1.set_right_margin(5)
-		
+
 		self._sw = gtk.ScrolledWindow()
 		self._sw.set_policy(gtk.POLICY_AUTOMATIC, gtk.POLICY_AUTOMATIC)
 		self._sw.add(self._treeview)
 		self._sw.show_all()
-		
+
 		self._textview2 = gtk.TextView()
 		self._textview2.set_editable(False)
 		self._textview1.set_left_margin(5)
@@ -225,11 +279,11 @@ class ResultsetPanel(gtk.VBox):
 		children = self.get_children()
 		for child in children:
 			self.remove(child)
-	
+
 	def _activate(self):
 		self._panel.set_property("visible", True)
 		self._panel.activate_item(self)
-		
+
 	def show_resultset(self, cursor, execution_time):
 		self._clean()
 		self._treeview.load_cursor(cursor)
@@ -246,7 +300,7 @@ class ResultsetPanel(gtk.VBox):
 		buff.set_text(message)
 		self.add(self._textview2)
 		self.show_all()
-		self._activate()	
+		self._activate()
 
 class ResultsetTreeView(gtk.TreeView):
 
@@ -260,16 +314,16 @@ class ResultsetTreeView(gtk.TreeView):
 		cols = len(self.get_columns())
 		while (cols > 0):
 			 cols = self.remove_column(self.get_column(0))
-		
+
 		column_types = []
 		tvcolumn = [None] * len(cursor.description)
-		
+
 		for n in range(0, len(cursor.description)):
-			
+
 			d = cursor.description[n]
 			column_name = d[0]
 			column_types.append(str)
-			
+
 			cell = gtk.CellRendererText()
 			cell.set_property("xpad", 10)
 			tvcolumn[n] = gtk.TreeViewColumn(column_name, cell, text=n+1)
@@ -277,16 +331,16 @@ class ResultsetTreeView(gtk.TreeView):
 			tvcolumn[n].set_data('column_id', n)
 			tvcolumn[n].set_cell_data_func(cell, self._cell_value)
 			self.append_column(tvcolumn[n])
-			
+
 		column_types = tuple(column_types)
 		new_model = gtk.ListStore(*column_types)
-		
+
 		while (1):
 			row = cursor.fetchone()
 			if row == None:
 				break
 			new_model.append(row)
-		
+
 		self.set_model(new_model)
 		self.set_reorderable(False)
 		self.show_all()
@@ -294,5 +348,3 @@ class ResultsetTreeView(gtk.TreeView):
 	def _cell_value(self, column, cell, model, iter):
 		pos = column.cell_get_position(cell)
 		cell.set_property('text', model.get_value(iter, column.get_data('column_id')))
-		return
-		
