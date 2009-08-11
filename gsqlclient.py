@@ -91,6 +91,11 @@ class GSqlClientPlugin(gedit.Plugin):
 			self._db_connect(view, window)
 			return True
 
+		# CTRL + ALT + R
+		if event.keyval == gtk.keysyms.r:
+			self._execute_script(view, window)
+			return True
+
 		return False
 
 	def _db_connect(self, view, window):
@@ -155,30 +160,81 @@ class GSqlClientPlugin(gedit.Plugin):
 		q = QueryParser(buff)
 		query = q.get_current_query()
 		if query is not None:
-			self._db_query(view, query)
+			ret = self._db_query(view, query)
+			if not ret["executed"]:
+				return
+			sw = view.get_data('resultset_panel')
+			if ret["errno"] != 0:
+				sw.show_information("Error %d: %s" % (ret["errno"], ret["error"]))
+			elif ret["selection"]:
+				sw.show_resultset(ret["cursor"], ret["execution_time"])
+			else:
+				sw.show_information("%s rows affected in %s" % (ret["rowcount"], ret["execution_time"]))
+			if ret["cursor"] is not None:
+				ret["cursor"].close()
 
 	def _execute_script(self, view, window):
 		""" Run document as script """
+		buff = view.get_buffer()
+		q = QueryParser(buff)
+		queries = q.get_all_queries()
+		sw = view.get_data('resultset_panel')
+		sw.clear_information()
+
+		n = 1
+		for query in queries:
+			if len(query) == 0:
+				continue
+			ret = self._db_query(view, query)
+			if not ret["executed"]:
+				continue
+			if ret["errno"] != 0:
+				sw.append_information("\n(%s) - Error %d: %s" % (n, ret["errno"], ret["error"]))
+			elif ret["selection"]:
+				sw.append_information("\n(%s) - %s rows fetched in %s" % (n, ret["rowcount"], ret["execution_time"]))
+			else:
+				sw.append_information("\n(%s) - %s rows affected in %s" % (n, ret["rowcount"], ret["execution_time"]))
+
+			n = n + 1
+			if ret["cursor"] is not None:
+				ret["cursor"].close()
 
 	def _db_query(self, view, query):
 		""" Executes a SQL query """
 
-		db = view.get_data('db_connection')
-		if db is None: return
+		result = {
+			"executed": False,
+			"errno": 0,
+			"error": '',
+			"rowcount": 0,
+			"execution_time": None,
+			"selection": False,
+			"cursor": None,
+			"description": None
+		}
 
-		sw = view.get_data('resultset_panel')
+		db = view.get_data('db_connection')
+		if db is None:
+			return result
+
+		result["executed"] = True
 		cursor = db.cursor(MySQLdb.cursors.Cursor)
 		try:
 			t1 = time.time()
 			cursor.execute(query)
 			execution_time = time.time() - t1
+			result["rowcount"] = cursor.rowcount
+			result["execution_time"] = execution_time
 			if cursor.description is not None:
-				sw.show_resultset(cursor, execution_time)
-			else:
-				sw.show_information("%s rows affected in %s" % (cursor.rowcount, execution_time))
-			cursor.close()
+				result["selection"] = True
+				result["cursor"] = cursor
+				result["description"] = cursor.description
+
 		except MySQLdb.Error, e:
-			sw.show_information("Error %d: %s" % (e.args[0], e.args[1]))
+			result["errno"] = e.args[0]
+			result["error"] = e.args[1]
+
+		return result
 
 	def _destroy_resultset_view(self, view, window):
 		sw = view.get_data('resultset_panel')
@@ -248,59 +304,24 @@ class QueryParser():
 		return query
 
 	def get_all_queries(self):
-		queries = ()
+		queries = []
+		query = []
+		it = self._buffer.get_start_iter()
+		while 1:
+			line = self.get_line(it)
+			if len(line) > 0:
+				query.append(line)
+			else:
+				query = str.join("\n", query).strip()
+				queries.append(query)
+				query = []
+			if not it.forward_line():
+				if len(query) > 0:
+					query = str.join("\n", query).strip()
+					queries.append(query)
+				break
 
-class ResultsetPanel(gtk.VBox):
-
-	def __init__(self, panel):
-
-		gtk.VBox.__init__(self)
-		self._panel = panel
-
-		self._treeview = ResultsetTreeView()
-		self._treeview.set_grid_lines(gtk.TREE_VIEW_GRID_LINES_HORIZONTAL)
-
-		self._textview1 = gtk.TextView()
-		self._textview1.set_editable(False)
-		self._textview1.set_left_margin(5)
-		self._textview1.set_right_margin(5)
-
-		self._sw = gtk.ScrolledWindow()
-		self._sw.set_policy(gtk.POLICY_AUTOMATIC, gtk.POLICY_AUTOMATIC)
-		self._sw.add(self._treeview)
-		self._sw.show_all()
-
-		self._textview2 = gtk.TextView()
-		self._textview2.set_editable(False)
-		self._textview1.set_left_margin(5)
-		self._textview1.set_right_margin(5)
-
-	def _clean(self):
-		children = self.get_children()
-		for child in children:
-			self.remove(child)
-
-	def _activate(self):
-		self._panel.set_property("visible", True)
-		self._panel.activate_item(self)
-
-	def show_resultset(self, cursor, execution_time):
-		self._clean()
-		self._treeview.load_cursor(cursor)
-		buff = self._textview1.get_buffer()
-		buff.set_text("%s rows fetched in %s" % (cursor.rowcount, execution_time))
-		self.pack_start(self._sw, True)
-		self.pack_start(self._textview1, False)
-		self.show_all()
-		self._activate()
-
-	def show_information(self, message):
-		self._clean()
-		buff = self._textview2.get_buffer()
-		buff.set_text(message)
-		self.add(self._textview2)
-		self.show_all()
-		self._activate()
+		return queries
 
 class ResultsetTreeView(gtk.TreeView):
 
@@ -348,3 +369,75 @@ class ResultsetTreeView(gtk.TreeView):
 	def _cell_value(self, column, cell, model, iter):
 		pos = column.cell_get_position(cell)
 		cell.set_property('text', model.get_value(iter, column.get_data('column_id')))
+
+class ResultsetPanel(gtk.VBox):
+
+	def __init__(self, panel):
+
+		gtk.VBox.__init__(self)
+		self._panel = panel
+
+		self._treeview = ResultsetTreeView()
+		self._treeview.set_grid_lines(gtk.TREE_VIEW_GRID_LINES_HORIZONTAL)
+
+		self._textview1 = gtk.TextView()
+		self._textview1.set_editable(False)
+		self._textview1.set_left_margin(5)
+		self._textview1.set_right_margin(5)
+
+		self._sw1 = gtk.ScrolledWindow()
+		self._sw1.set_policy(gtk.POLICY_AUTOMATIC, gtk.POLICY_AUTOMATIC)
+		self._sw1.add(self._treeview)
+		self._sw1.show_all()
+
+		self._textview2 = gtk.TextView()
+		self._textview2.set_editable(False)
+		self._textview2.set_left_margin(5)
+		self._textview2.set_right_margin(5)
+
+		self._sw2 = gtk.ScrolledWindow()
+		self._sw2.set_policy(gtk.POLICY_AUTOMATIC, gtk.POLICY_AUTOMATIC)
+		self._sw2.add(self._textview2)
+		self._sw2.show_all()
+
+	def _clean(self):
+		children = self.get_children()
+		for child in children:
+			self.remove(child)
+
+	def _activate(self):
+		self._panel.set_property("visible", True)
+		self._panel.activate_item(self)
+
+	def show_resultset(self, cursor, execution_time):
+		self._clean()
+		self._treeview.load_cursor(cursor)
+		buff = self._textview1.get_buffer()
+		buff.set_text("%s rows fetched in %s" % (cursor.rowcount, execution_time))
+		self.pack_start(self._sw1, True)
+		self.pack_start(self._textview1, False)
+		self.show_all()
+		self._activate()
+
+	def clear_information(self):
+		buff = self._textview2.get_buffer()
+		buff.set_text("")
+
+	def show_information(self, message):
+		self._clean()
+		buff = self._textview2.get_buffer()
+		buff.set_text(message)
+		#self.add(self._textview2)
+		self.pack_start(self._sw2, True)
+		self.show_all()
+		self._activate()
+
+	def append_information(self, message):
+		self._clean()
+		buff = self._textview2.get_buffer()
+		it = buff.get_end_iter()
+		buff.insert(it, "\n"+message)
+		#self.add(self._textview2)
+		self.pack_start(self._sw2, True)
+		self.show_all()
+		self._activate()
