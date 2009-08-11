@@ -1,2 +1,8 @@
+2009-08-11	gSqlClient-0.1
+	* Show MySQL errors in the bottom panel.
+	* Show resultset information below the grid.
+	* Added feature "Run as script".
+	* Improves the TextBuffer parsing for searching queries.
+
 2009-08-04	gSqlClient-0.1-beta
 	* Initial import of the beta version.
