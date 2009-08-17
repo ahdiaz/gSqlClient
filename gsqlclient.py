@@ -24,11 +24,13 @@ import gedit
 import gtk
 import gtk.glade
 import MySQLdb
+from xml.dom.minidom import getDOMImplementation
 
 class GSqlClientPlugin(gedit.Plugin):
 
 	def __init__(self):
 		gedit.Plugin.__init__(self)
+		self._gladeFile = os.path.join(os.path.dirname(__file__), "gsqlclient.glade")
 
 	def activate(self, window):
 		""" Activate plugin. """
@@ -100,8 +102,7 @@ class GSqlClientPlugin(gedit.Plugin):
 
 	def _db_connect(self, view, window):
 
-		gladeFile = os.path.join(os.path.dirname(__file__), "gsqlclient.glade")
-		xmltree = gtk.glade.XML(gladeFile)
+		xmltree = gtk.glade.XML(self._gladeFile)
 		xmltree.signal_autoconnect(self)
 		connection_dialog = xmltree.get_widget('connectionDialog')
 		connection_dialog.set_transient_for(window)
@@ -116,10 +117,10 @@ class GSqlClientPlugin(gedit.Plugin):
 			exit = True
 
 			if result == 1:
-				host = xmltree.get_widget('txtHost').get_text()
-				user = xmltree.get_widget('txtUser').get_text()
-				passwd = xmltree.get_widget('txtPassword').get_text()
-				schema = xmltree.get_widget('txtSchema').get_text()
+				host = xmltree.get_widget('txtHost').get_text().strip()
+				user = xmltree.get_widget('txtUser').get_text().strip()
+				passwd = xmltree.get_widget('txtPassword').get_text().strip()
+				schema = xmltree.get_widget('txtSchema').get_text().strip()
 
 				if db is not None:
 					self._db_disconnect(view, window)
@@ -128,16 +129,12 @@ class GSqlClientPlugin(gedit.Plugin):
 					db = MySQLdb.connect(host=host, user=user, passwd=passwd, db=schema)
 					view.set_data('db_connection', db)
 					panel = window.get_bottom_panel()
-					rset = ResultsetPanel(panel)
+					rset = ResultsetPanel(panel, xmltree)
 					view.set_data('resultset_panel', rset)
 					panel.add_item(rset, 'Resultset', gtk.Image())
 
 				except MySQLdb.Error, e:
-					error_dialog = gtk.Dialog(title="Connection error", parent=window, flags=gtk.DIALOG_MODAL, buttons=None)
-					error_dialog.add_button("Close", gtk.RESPONSE_CLOSE)
-					label = gtk.Label("\n  Error %d: %s  \n" % (e.args[0], e.args[1]))
-					error_dialog.vbox.pack_start(label, True, True, 0)
-					label.show()
+					error_dialog = ConnectionErrorDialog("\n  Error %d: %s  \n" % (e.args[0], e.args[1]), window)
 					error_dialog.run()
 					error_dialog.destroy()
 					exit = False
@@ -156,48 +153,98 @@ class GSqlClientPlugin(gedit.Plugin):
 			view.set_data('db_connection', None)
 
 	def _execute_query(self, view, window):
+
+		sw = view.get_data('resultset_panel')
+		if sw is not None:
+			sw.clear_resultset()
+			sw.clear_information()
+
 		buff = view.get_buffer()
 		q = QueryParser(buff)
 		query = q.get_current_query()
+
 		if query is not None:
+
 			ret = self._db_query(view, query)
 			if not ret["executed"]:
 				return
-			sw = view.get_data('resultset_panel')
+
 			if ret["errno"] != 0:
 				sw.show_information("Error %d: %s" % (ret["errno"], ret["error"]))
 			elif ret["selection"]:
 				sw.show_resultset(ret["cursor"], ret["execution_time"])
+				sw.get_treeview().set_data("last_query", query)
 			else:
 				sw.show_information("%s rows affected in %s" % (ret["rowcount"], ret["execution_time"]))
+
 			if ret["cursor"] is not None:
 				ret["cursor"].close()
 
 	def _execute_script(self, view, window):
 		""" Run document as script """
+
+		xmltree = gtk.glade.XML(self._gladeFile)
+		script_dialog = xmltree.get_widget('scriptDialog')
+		script_dialog.set_transient_for(window)
+		dialog_ret = script_dialog.run()
+
+		rbStop = xmltree.get_widget('radiobuttonStop').get_active()
+		rbAsk = xmltree.get_widget('radiobuttonAsk').get_active()
+		rbIgnore = xmltree.get_widget('radiobuttonIgnore').get_active()
+
+		script_dialog.destroy()
+		if dialog_ret == 0:
+			return
+
+		sw = view.get_data('resultset_panel')
+		if sw is not None:
+			sw.clear_resultset()
+			sw.clear_information()
+
 		buff = view.get_buffer()
 		q = QueryParser(buff)
 		queries = q.get_all_queries()
-		sw = view.get_data('resultset_panel')
-		sw.clear_information()
 
 		n = 1
 		for query in queries:
+
 			if len(query) == 0:
 				continue
+
 			ret = self._db_query(view, query)
+
 			if not ret["executed"]:
 				continue
+
+			if ret["cursor"] is not None:
+				ret["cursor"].close()
+
 			if ret["errno"] != 0:
-				sw.append_information("\n(%s) - Error %d: %s" % (n, ret["errno"], ret["error"]))
+
+				error_message = "\n(%s) - Error %d: %s" % (n, ret["errno"], ret["error"])
+				sw.append_information(error_message)
+
+				if rbAsk:
+					
+					error_dialog = ScriptErrorDialog(error_message, window)
+					error_dialog_ret = error_dialog.run()
+					error_dialog.destroy()
+
+					if error_dialog_ret == 1:
+						rbAsk = False
+						rbIgnore = True
+					elif error_dialog_ret == 0:
+						rbStop = True
+
+				if rbStop:
+					break
+
 			elif ret["selection"]:
 				sw.append_information("\n(%s) - %s rows fetched in %s" % (n, ret["rowcount"], ret["execution_time"]))
 			else:
 				sw.append_information("\n(%s) - %s rows affected in %s" % (n, ret["rowcount"], ret["execution_time"]))
 
 			n = n + 1
-			if ret["cursor"] is not None:
-				ret["cursor"].close()
 
 	def _db_query(self, view, query):
 		""" Executes a SQL query """
@@ -255,12 +302,12 @@ class QueryParser():
 	def get_line(self, its):
 		ite = its.copy()
 		its.set_line_offset(0)
-		ite.forward_to_line_end()
+		if  not ite.ends_line():
+			ite.forward_to_line_end()
 		if its.get_line() != ite.get_line():
 			return ""
 		line = its.get_text(ite).strip()
 		#print "\n(%s) - %s\n" % (len(line), line)
-		#print "its = %s, ite = %s\n" % (its.get_line(), ite.get_line())
 		return line
 
 	def get_selection(self):
@@ -282,6 +329,9 @@ class QueryParser():
 		query = []
 		its = self._get_iter_at_cursor()
 		line = self.get_line(its)
+		if len(line) == 0:
+			return None
+
 		while its.backward_line() and len(line) > 0:
 			query.append(line)
 			line = self.get_line(its)
@@ -291,11 +341,10 @@ class QueryParser():
 		while 1:
 			cont = its.forward_line()
 			line = self.get_line(its)
-			if len(line) == 0:
+			if not cont or len(line) == 0:
 				break
-			query.append(line)
-			if not cont:
-				break
+			else:
+				query.append(line)
 
 		query = str.join("\n", query).strip()
 		if len(query) == 0:
@@ -327,26 +376,38 @@ class ResultsetTreeView(gtk.TreeView):
 
 	def __init__(self):
 		gtk.TreeView.__init__(self)
+		self.set_grid_lines(gtk.TREE_VIEW_GRID_LINES_HORIZONTAL)
+		self.connect("button_press_event", self._on_treeview_clicked)
+		self._contextmenu = None
 
-	def load_cursor(self, cursor):
-
+	def clear_treeview(self):
 		self.set_model(None)
+		self.clear_columns()
+		self.set_data("columns", 0)
+		self.set_data("last_query", None)
 
+	def clear_columns(self):
 		cols = len(self.get_columns())
 		while (cols > 0):
 			 cols = self.remove_column(self.get_column(0))
 
-		column_types = []
-		tvcolumn = [None] * len(cursor.description)
+	def load_cursor(self, cursor):
 
-		for n in range(0, len(cursor.description)):
+		self.clear_treeview()
+
+		column_types = []
+		columns = len(cursor.description)
+		self.set_data("columns", columns)
+		tvcolumn = [None] * columns
+
+		for n in range(0, columns):
 
 			d = cursor.description[n]
 			column_name = d[0]
 			column_types.append(str)
 
 			cell = gtk.CellRendererText()
-			cell.set_property("xpad", 10)
+			cell.set_property("xpad", 3)
 			tvcolumn[n] = gtk.TreeViewColumn(column_name, cell, text=n+1)
 			tvcolumn[n].set_resizable(True)
 			tvcolumn[n].set_data('column_id', n)
@@ -370,74 +431,289 @@ class ResultsetTreeView(gtk.TreeView):
 		pos = column.cell_get_position(cell)
 		cell.set_property('text', model.get_value(iter, column.get_data('column_id')))
 
-class ResultsetPanel(gtk.VBox):
+	def _on_treeview_clicked(self, treeview, event):
 
-	def __init__(self, panel):
+		if event.button != 3:
+			return
 
-		gtk.VBox.__init__(self)
+		columns = treeview.get_data("columns")
+		column = treeview.get_path_at_pos(int(event.x), int(event.y))
+
+		if column is None:
+			return
+
+		path = column[0]
+		column = column[1]
+
+		if self._contextmenu is not None:
+			self._contextmenu.destroy()
+		self._contextmenu = ResultsetContextmenu(treeview, path, column)
+		self._contextmenu.popup(event)
+
+	def _get_cell_value(self, treeview, path, column):
+
+		row = self._get_row_value(treeview, path)
+		column_id = column.get_data("column_id")
+		return row[column_id]
+
+	def _get_row_value(self, treeview, path):
+
+		model = treeview.get_model()
+		return model[path]
+
+	def cell_value_to_clipboard(self, menuitem, path, column):
+
+		""" self == treeview """
+		self._contextmenu.destroy()
+		value = self._get_cell_value(self, path, column)
+		if value is None:
+			value = "NULL"
+		clipboard = gtk.clipboard_get(gtk.gdk.SELECTION_CLIPBOARD)
+		clipboard.set_text(value)
+		return value
+
+	def row_value_to_clipboard(self, menuitem, path):
+
+		""" self == treeview """
+		self._contextmenu.destroy()
+
+		_row = self._get_row_value(self, path)
+		row = []
+		for value in _row:
+			if value is None:
+				value = "NULL"
+			row.append(value)
+
+		value = '"%s"' % (str.join('"\t"', row).strip(" \t\r\n"))
+		clipboard = gtk.clipboard_get(gtk.gdk.SELECTION_CLIPBOARD)
+		clipboard.set_text(value)
+		return value
+
+	def export_grid(self, widget, format):
+
+		# widget is a variable object
+		
+		_columns = self.get_columns()
+		columns = []
+		for c in range(0, len(_columns)):
+			columns.append(_columns[c].get_title())
+
+		chooser = gtk.FileChooserDialog(
+			title=None,action=gtk.FILE_CHOOSER_ACTION_SAVE,
+			buttons=(gtk.STOCK_CANCEL,gtk.RESPONSE_CANCEL,gtk.STOCK_OPEN,gtk.RESPONSE_OK)
+		)
+		chooser.run()
+		filename = chooser.get_filename()
+		chooser.destroy()
+
+		if filename is None:
+			return None
+
+		if os.path.isfile(filename):
+			
+			file_dialog = FileExistsDialog("File "+filename+" exists, overwrite?", None)
+			file_dialog_ret = file_dialog.run()
+			file_dialog.destroy()
+			if file_dialog_ret == 0:
+				return None
+		
+		re = ResultsetExport(self.get_model(), columns)
+		if format == "xml":
+			export = re.export_xml()
+		elif format == "csv":
+			export = re.export_csv()
+		else:
+			return None
+
+		fp = open(filename, "w")
+		fp.write(export)
+		fp.close()
+		
+		return export
+
+class ResultsetExport():
+
+	def __init__(self, model, columns):
+		self._model = model
+		self._columns = columns
+
+	def export_xml(self):
+
+		impl = getDOMImplementation()
+		#namespaceUri=None, qualifiedName="resultset", doctype=None
+		doc = impl.createDocument(None, "resultset", None)
+		root = doc.documentElement
+
+		it = self._model.get_iter_first()
+		while it is not None:
+
+			row = doc.createElement("row")
+
+			for c in range(0, len(self._columns)):
+				column = self._columns[c]
+				value = self._model[it][c]
+				if value is None:
+					value = "NULL"
+				if type(value).__name__ != "str":
+					value = str(value)
+				field = doc.createElement("field")
+				name = doc.createAttribute("name")
+				name.value = column
+				field.setAttributeNode(name)
+				field.appendChild(doc.createTextNode(value))
+				row.appendChild(field)
+
+			root.appendChild(row)
+			it = self._model.iter_next(it)
+
+		xmlstr = doc.toxml()
+		doc.unlink()
+		return xmlstr
+
+	def export_csv(self):
+
+		csvstr = '"%s"\n' % (str.join('","', self._columns))
+		it = self._model.get_iter_first()
+		while it is not None:
+			row = []
+			_row = self._model[it]
+			for value in _row:
+				if value is None:
+					value = "NULL"
+				row.append(value)
+			csvstr += '"%s"\n' % (str.join('","', row))
+			it = self._model.iter_next(it)
+
+		return csvstr
+
+class ResultsetContextmenu(gtk.Menu):
+
+	def __init__(self, treeview, path, column):
+
+		gtk.Menu.__init__(self)
+
+		# Create the menu items
+		copy_cell_item = gtk.MenuItem("Copy cell value")
+		copy_row_item = gtk.MenuItem("Copy row value")
+		export_xml = gtk.MenuItem("Export as XML")
+		export_csv = gtk.MenuItem("Export as CSV")
+
+		# Add them to the menu
+		self.append(copy_cell_item)
+		self.append(copy_row_item)
+		self.append(export_xml)
+		self.append(export_csv)
+
+		# Attach the callback functions to the activate signal
+		copy_cell_item.connect("activate", treeview.cell_value_to_clipboard, path, column)
+		copy_row_item.connect("activate", treeview.row_value_to_clipboard, path)
+		export_xml.connect("activate", treeview.export_grid, "xml")
+		export_csv.connect("activate", treeview.export_grid, "csv")
+
+		# We do need to show menu items
+		self.show_all()
+
+	def popup(self, event):
+		gtk.Menu.popup(self, None, None, None, event.button, event.time)
+
+class ResultsetPanel(gtk.HBox):
+
+	def __init__(self, panel, xmltree):
+
+		gtk.HBox.__init__(self)
 		self._panel = panel
 
+		hbox = xmltree.get_widget("hboxContainer")
+
+		vbox1 = xmltree.get_widget("resultset-vbox1")
+		vbox1.reparent(self)
+
+		self._rset_panel = xmltree.get_widget("resultset-vbox3")
+		self._rset_panel.hide()
+		self._info_panel = xmltree.get_widget("resultset-sw2")
+		self._info_panel.hide()
+
+		self._treeview = xmltree.get_widget("treeviewResultset")
+		self._text_info = xmltree.get_widget("textviewQueryInfo")
+		self._text_error = xmltree.get_widget("textviewErrorInfo")
+
+		sw = xmltree.get_widget("resultset-sw1")
+		sw.remove(self._treeview)
+		self._treeview.destroy()
 		self._treeview = ResultsetTreeView()
-		self._treeview.set_grid_lines(gtk.TREE_VIEW_GRID_LINES_HORIZONTAL)
+		sw.add(self._treeview)
 
-		self._textview1 = gtk.TextView()
-		self._textview1.set_editable(False)
-		self._textview1.set_left_margin(5)
-		self._textview1.set_right_margin(5)
+	def get_treeview(self):
+		return self._treeview
 
-		self._sw1 = gtk.ScrolledWindow()
-		self._sw1.set_policy(gtk.POLICY_AUTOMATIC, gtk.POLICY_AUTOMATIC)
-		self._sw1.add(self._treeview)
-		self._sw1.show_all()
+	def get_text_info(self):
+		return self._text_info
 
-		self._textview2 = gtk.TextView()
-		self._textview2.set_editable(False)
-		self._textview2.set_left_margin(5)
-		self._textview2.set_right_margin(5)
-
-		self._sw2 = gtk.ScrolledWindow()
-		self._sw2.set_policy(gtk.POLICY_AUTOMATIC, gtk.POLICY_AUTOMATIC)
-		self._sw2.add(self._textview2)
-		self._sw2.show_all()
-
-	def _clean(self):
-		children = self.get_children()
-		for child in children:
-			self.remove(child)
+	def get_text_error(self):
+		return self._text_error
 
 	def _activate(self):
 		self._panel.set_property("visible", True)
 		self._panel.activate_item(self)
 
+	def clear_resultset(self):
+		self._treeview.clear_treeview()
+		buff = self._text_info.get_buffer()
+		buff.set_text("")
+
 	def show_resultset(self, cursor, execution_time):
-		self._clean()
 		self._treeview.load_cursor(cursor)
-		buff = self._textview1.get_buffer()
+		buff = self._text_info.get_buffer()
 		buff.set_text("%s rows fetched in %s" % (cursor.rowcount, execution_time))
-		self.pack_start(self._sw1, True)
-		self.pack_start(self._textview1, False)
-		self.show_all()
+		self._info_panel.hide()
+		self._rset_panel.show()
 		self._activate()
 
 	def clear_information(self):
-		buff = self._textview2.get_buffer()
+		buff = self._text_error.get_buffer()
 		buff.set_text("")
 
 	def show_information(self, message):
-		self._clean()
-		buff = self._textview2.get_buffer()
+		buff = self._text_error.get_buffer()
 		buff.set_text(message)
-		#self.add(self._textview2)
-		self.pack_start(self._sw2, True)
-		self.show_all()
+		self._rset_panel.hide()
+		self._info_panel.show()
 		self._activate()
 
 	def append_information(self, message):
-		self._clean()
-		buff = self._textview2.get_buffer()
+		buff = self._text_error.get_buffer()
 		it = buff.get_end_iter()
 		buff.insert(it, "\n"+message)
-		#self.add(self._textview2)
-		self.pack_start(self._sw2, True)
-		self.show_all()
+		self._rset_panel.hide()
+		self._info_panel.show()
 		self._activate()
+
+class ConnectionErrorDialog(gtk.Dialog):
+
+	def __init__(self, message, parent=None):
+		gtk.Dialog.__init__(self, title="Connection error", parent=parent, flags=gtk.DIALOG_MODAL, buttons=None)
+		self.add_button("Close", gtk.RESPONSE_CLOSE)
+		label = gtk.Label(message)
+		self.vbox.pack_start(label, True, True, 0)
+		label.show()
+
+class ScriptErrorDialog(gtk.Dialog):
+
+	def __init__(self, message, parent=None):
+		gtk.Dialog.__init__(self, title="Script error", parent=parent, flags=gtk.DIALOG_MODAL, buttons=None)
+		self.add_button("Ignore", 2)
+		self.add_button("Ignore all", 1)
+		self.add_button("Stop script", 0)
+		label = gtk.Label(message)
+		self.vbox.pack_start(label, True, True, 0)
+		label.show()
+
+class FileExistsDialog(gtk.Dialog):
+
+	def __init__(self, message, parent=None):
+		gtk.Dialog.__init__(self, title="File exists", parent=parent, flags=gtk.DIALOG_MODAL, buttons=None)
+		self.add_button("Yes", 1)
+		self.add_button("Cancel", 0)
+		label = gtk.Label(message)
+		self.vbox.pack_start(label, True, True, 0)
+		label.show()

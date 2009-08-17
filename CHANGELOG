@@ -1,3 +1,8 @@
+2009-08-17	gSqlClient-0.2
+	* Added a contextual menu with options for copy grid values and export resultsets.
+	* Added a dialog with error control options for "Run as script" mode.
+	* Improvements parsing the queries.
+
 2009-08-11	gSqlClient-0.1
 	* Show MySQL errors in the bottom panel.
 	* Show resultset information below the grid.

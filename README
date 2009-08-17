@@ -22,5 +22,12 @@ on and press CTRL+ENTER, the plugin will only execute the selection.
 
 You can execute the entire document as a script pressing CTRL+ALT+R.
 
+New features since version 0.2:
+
+There is a contextual menu with options for copy grid values and export resultsets as XML or CSV
+formats, right click on the resultset grid and select the option you want.
+
+When pressing CTRL+ALT+R for running a script, a new dialog appears with options for handle query errors.
+
 Remember that you can have one diferent connection on each Gedit tab so you can query diferent databases from the
 same instance of Gedit.
