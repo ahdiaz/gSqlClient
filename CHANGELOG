@@ -1,3 +1,6 @@
+2010-12-21	gSqlClient-0.3
+	* The host field is parsed correctly and now can connect using host:port or a socket file.
+
 2009-08-17	gSqlClient-0.2
 	* Added a contextual menu with options for copy grid values and export resultsets.
 	* Added a dialog with error control options for "Run as script" mode.
