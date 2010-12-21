@@ -126,7 +126,24 @@ class GSqlClientPlugin(gedit.Plugin):
 					self._db_disconnect(view, window)
 
 				try:
-					db = MySQLdb.connect(host=host, user=user, passwd=passwd, db=schema)
+				
+					options = {
+						'user': user,
+						'passwd': passwd,
+						'db': schema
+					}
+					
+					if os.path.exists(host):
+						options['unix_socket'] = host
+					elif host.find(':') > 0:
+						hostport = host.split(':')
+						options['host'] = hostport[0]
+						options['port'] = int(hostport[1])
+					else:
+						options['host'] = host
+					
+					db = MySQLdb.connect(**options)
+
 					view.set_data('db_connection', db)
 					panel = window.get_bottom_panel()
 					rset = ResultsetPanel(panel, xmltree)
