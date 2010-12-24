@@ -422,7 +422,7 @@ class ResultsetTreeView(gtk.TreeView):
 		for n in range(0, columns):
 
 			d = cursor.description[n]
-			column_name = d[0]
+			column_name = d[0].replace("_", "__")
 			column_types.append(str)
 
 			cell = gtk.CellRendererText()
