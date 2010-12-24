@@ -1,6 +1,6 @@
 [Gedit Plugin]
 Loader=python
-Module=gsqlclient
+Module=gSqlClient
 IAge=2
 Name=gSqlClient
 Description=gSqlClient is a Python plugin that allows to query MySQL databases from Gedit.

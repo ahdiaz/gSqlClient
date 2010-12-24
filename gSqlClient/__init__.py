@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
-# $Id
+# $Id$
 #
 
 """ This plugin enables Gedit as a MySQL client. """
@@ -128,13 +128,13 @@ class GSqlClientPlugin(gedit.Plugin):
 					self._db_disconnect(view, window)
 
 				try:
-				
+
 					options = {
 						'user': user,
 						'passwd': passwd,
 						'db': schema
 					}
-					
+
 					if os.path.exists(host):
 						options['unix_socket'] = host
 					elif host.find(':') > 0:
@@ -143,7 +143,7 @@ class GSqlClientPlugin(gedit.Plugin):
 						options['port'] = int(hostport[1])
 					else:
 						options['host'] = host
-					
+
 					db = MySQLdb.connect(**options)
 
 					view.set_data('db_connection', db)
@@ -244,7 +244,7 @@ class GSqlClientPlugin(gedit.Plugin):
 				sw.append_information(error_message)
 
 				if rbAsk:
-					
+
 					error_dialog = ScriptErrorDialog(error_message, window)
 					error_dialog_ret = error_dialog.run()
 					error_dialog.destroy()
@@ -427,7 +427,7 @@ class ResultsetTreeView(gtk.TreeView):
 
 			cell = gtk.CellRendererText()
 			cell.set_property("xpad", 3)
-			tvcolumn[n] = gtk.TreeViewColumn(column_name, cell, text=n+1)
+			tvcolumn[n] = gtk.TreeViewColumn(column_name, cell, text = n + 1)
 			tvcolumn[n].set_resizable(True)
 			tvcolumn[n].set_data('column_id', n)
 			tvcolumn[n].set_cell_data_func(cell, self._cell_value)
@@ -511,15 +511,15 @@ class ResultsetTreeView(gtk.TreeView):
 	def export_grid(self, widget, format):
 
 		# widget is a variable object
-		
+
 		_columns = self.get_columns()
 		columns = []
 		for c in range(0, len(_columns)):
 			columns.append(_columns[c].get_title())
 
 		chooser = gtk.FileChooserDialog(
-			title=None,action=gtk.FILE_CHOOSER_ACTION_SAVE,
-			buttons=(gtk.STOCK_CANCEL,gtk.RESPONSE_CANCEL,gtk.STOCK_OPEN,gtk.RESPONSE_OK)
+			title = None, action = gtk.FILE_CHOOSER_ACTION_SAVE,
+			buttons = (gtk.STOCK_CANCEL, gtk.RESPONSE_CANCEL, gtk.STOCK_OPEN, gtk.RESPONSE_OK)
 		)
 		chooser.run()
 		filename = chooser.get_filename()
@@ -529,13 +529,13 @@ class ResultsetTreeView(gtk.TreeView):
 			return None
 
 		if os.path.isfile(filename):
-			
-			file_dialog = FileExistsDialog("File "+filename+" exists, overwrite?", None)
+
+			file_dialog = FileExistsDialog("File " + filename + " exists, overwrite?", None)
 			file_dialog_ret = file_dialog.run()
 			file_dialog.destroy()
 			if file_dialog_ret == 0:
 				return None
-		
+
 		re = ResultsetExport(self.get_model(), columns)
 		if format == "xml":
 			export = re.export_xml()
@@ -547,7 +547,7 @@ class ResultsetTreeView(gtk.TreeView):
 		fp = open(filename, "w")
 		fp.write(export)
 		fp.close()
-		
+
 		return export
 
 class ResultsetExport():
@@ -702,15 +702,15 @@ class ResultsetPanel(gtk.HBox):
 	def append_information(self, message):
 		buff = self._text_error.get_buffer()
 		it = buff.get_end_iter()
-		buff.insert(it, "\n"+message)
+		buff.insert(it, "\n" + message)
 		self._rset_panel.hide()
 		self._info_panel.show()
 		self._activate()
 
 class ConnectionErrorDialog(gtk.Dialog):
 
-	def __init__(self, message, parent=None):
-		gtk.Dialog.__init__(self, title="Connection error", parent=parent, flags=gtk.DIALOG_MODAL, buttons=None)
+	def __init__(self, message, parent = None):
+		gtk.Dialog.__init__(self, title = "Connection error", parent = parent, flags = gtk.DIALOG_MODAL, buttons = None)
 		self.add_button("Close", gtk.RESPONSE_CLOSE)
 		label = gtk.Label(message)
 		self.vbox.pack_start(label, True, True, 0)
@@ -718,8 +718,8 @@ class ConnectionErrorDialog(gtk.Dialog):
 
 class ScriptErrorDialog(gtk.Dialog):
 
-	def __init__(self, message, parent=None):
-		gtk.Dialog.__init__(self, title="Script error", parent=parent, flags=gtk.DIALOG_MODAL, buttons=None)
+	def __init__(self, message, parent = None):
+		gtk.Dialog.__init__(self, title = "Script error", parent = parent, flags = gtk.DIALOG_MODAL, buttons = None)
 		self.add_button("Ignore", 2)
 		self.add_button("Ignore all", 1)
 		self.add_button("Stop script", 0)
@@ -729,8 +729,8 @@ class ScriptErrorDialog(gtk.Dialog):
 
 class FileExistsDialog(gtk.Dialog):
 
-	def __init__(self, message, parent=None):
-		gtk.Dialog.__init__(self, title="File exists", parent=parent, flags=gtk.DIALOG_MODAL, buttons=None)
+	def __init__(self, message, parent = None):
+		gtk.Dialog.__init__(self, title = "File exists", parent = parent, flags = gtk.DIALOG_MODAL, buttons = None)
 		self.add_button("Yes", 1)
 		self.add_button("Cancel", 0)
 		label = gtk.Label(message)
