@@ -26,6 +26,7 @@ import gedit
 import gtk
 import gtk.glade
 import MySQLdb
+import sqlite3
 from xml.dom.minidom import getDOMImplementation
 
 class GSqlClientPlugin(gedit.Plugin):
@@ -119,6 +120,7 @@ class GSqlClientPlugin(gedit.Plugin):
 			exit = True
 
 			if result == 1:
+				driver = xmltree.get_widget('txtDriver').get_text().strip()
 				host = xmltree.get_widget('txtHost').get_text().strip()
 				user = xmltree.get_widget('txtUser').get_text().strip()
 				passwd = xmltree.get_widget('txtPassword').get_text().strip()
@@ -129,22 +131,12 @@ class GSqlClientPlugin(gedit.Plugin):
 
 				try:
 
-					options = {
-						'user': user,
-						'passwd': passwd,
-						'db': schema
-					}
+					dbw = DatabaseWrapper()
 
-					if os.path.exists(host):
-						options['unix_socket'] = host
-					elif host.find(':') > 0:
-						hostport = host.split(':')
-						options['host'] = hostport[0]
-						options['port'] = int(hostport[1])
-					else:
-						options['host'] = host
+					options = dbw.get_options(driver, host, user, passwd, schema)
 
-					db = MySQLdb.connect(**options)
+					db = dbw.connect(driver, options)
+#					db = MySQLdb.connect(**options)
 
 					view.set_data('db_connection', db)
 					panel = window.get_bottom_panel()
@@ -308,6 +300,48 @@ class GSqlClientPlugin(gedit.Plugin):
 		panel.remove_item(sw)
 		sw.destroy()
 		view.set_data('resultset_panel', None)
+
+class DatabaseWrapper():
+
+	DB_MYSQL = 'mysql'
+	DB_SQLITE = 'sqlite'
+
+	def __init__(self):
+		pass
+
+	def get_options(self, driver, host, user, passwd, schema):
+
+		if driver == DatabaseWrapper.DB_MYSQL:
+
+			options = {
+				'user': user,
+				'passwd': passwd,
+				'db': schema
+			}
+
+			if os.path.exists(host):
+				options['unix_socket'] = host
+			elif host.find(':') > 0:
+				hostport = host.split(':')
+				options['host'] = hostport[0]
+				options['port'] = int(hostport[1])
+			else:
+				options['host'] = host
+
+		elif  driver == DatabaseWrapper.DB_SQLITE:
+
+			options = {'database': schema}
+
+		return options
+
+	def connect(self, driver, options):
+
+		if driver == DatabaseWrapper.DB_MYSQL:
+			db = MySQLdb.connect(**options)
+		elif  driver == DatabaseWrapper.DB_SQLITE:
+			db = sqlite3.connect(**options)
+
+		return db
 
 class QueryParser():
 

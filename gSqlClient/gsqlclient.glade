@@ -1,4 +1,4 @@
-<?xml version="1.0"?>
+<?xml version="1.0" encoding="UTF-8"?>
 <glade-interface>
   <!-- interface-requires gtk+ 2.16 -->
   <!-- interface-naming-policy toplevel-contextual -->
@@ -17,6 +17,36 @@
         <child>
           <widget class="GtkVBox" id="connection-vbox2">
             <property name="visible">True</property>
+            <child>
+              <widget class="GtkHBox" id="connection-hbox2">
+                <property name="visible">True</property>
+                <child>
+                  <widget class="GtkLabel" id="label5">
+                    <property name="width_request">1</property>
+                    <property name="visible">True</property>
+                    <property name="label" translatable="yes">Driver</property>
+                    <property name="justify">right</property>
+                  </widget>
+                  <packing>
+                    <property name="position">0</property>
+                  </packing>
+                </child>
+                <child>
+                  <widget class="GtkEntry" id="txtDriver">
+                    <property name="visible">True</property>
+                    <property name="can_focus">True</property>
+                    <property name="invisible_char">●</property>
+                    <property name="truncate_multiline">True</property>
+                  </widget>
+                  <packing>
+                    <property name="position">1</property>
+                  </packing>
+                </child>
+              </widget>
+              <packing>
+                <property name="position">0</property>
+              </packing>
+            </child>
             <child>
               <widget class="GtkHBox" id="connection-hbox1">
                 <property name="visible">True</property>
@@ -44,7 +74,7 @@
                 </child>
               </widget>
               <packing>
-                <property name="position">0</property>
+                <property name="position">1</property>
               </packing>
             </child>
             <child>
@@ -73,7 +103,7 @@
                 </child>
               </widget>
               <packing>
-                <property name="position">1</property>
+                <property name="position">2</property>
               </packing>
             </child>
             <child>
@@ -103,7 +133,7 @@
                 </child>
               </widget>
               <packing>
-                <property name="position">2</property>
+                <property name="position">3</property>
               </packing>
             </child>
             <child>
@@ -132,7 +162,7 @@
                 </child>
               </widget>
               <packing>
-                <property name="position">3</property>
+                <property name="position">4</property>
               </packing>
             </child>
           </widget>
@@ -206,10 +236,8 @@
         <child>
           <widget class="GtkVBox" id="resultset-vbox1">
             <property name="visible">True</property>
-            <property name="orientation">vertical</property>
             <child>
               <widget class="GtkVBox" id="resultset-vbox3">
-                <property name="orientation">vertical</property>
                 <child>
                   <widget class="GtkScrolledWindow" id="resultset-sw1">
                     <property name="visible">True</property>
@@ -283,15 +311,12 @@
     <property name="modal">True</property>
     <property name="window_position">center-on-parent</property>
     <property name="type_hint">dialog</property>
-    <property name="has_separator">False</property>
     <child internal-child="vbox">
       <widget class="GtkVBox" id="script-vbox2">
         <property name="visible">True</property>
-        <property name="orientation">vertical</property>
         <child>
           <widget class="GtkVBox" id="script-vbox1">
             <property name="visible">True</property>
-            <property name="orientation">vertical</property>
             <property name="spacing">10</property>
             <child>
               <widget class="GtkRadioButton" id="radiobuttonAsk">
