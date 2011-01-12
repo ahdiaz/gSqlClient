@@ -144,8 +144,16 @@ class GSqlClientPlugin(gedit.Plugin):
 					view.set_data('resultset_panel', rset)
 					panel.add_item(rset, 'Resultset', gtk.Image())
 
-				except MySQLdb.Error, e:
-					error_dialog = ConnectionErrorDialog("\n  Error %d: %s  \n" % (e.args[0], e.args[1]), window)
+				except (MySQLdb.Error, sqlite3.Error), e:
+					dbw = DatabaseWrapper()
+					err = dbw.parse_error(e)
+					error_dialog = ConnectionErrorDialog("\n  Error %d: %s  \n" % (err["errno"], err["error"]), window)
+					error_dialog.run()
+					error_dialog.destroy()
+					exit = False
+
+				except Exception, e:
+					error_dialog = ConnectionErrorDialog("\n  %s  \n" % (e), window)
 					error_dialog.run()
 					error_dialog.destroy()
 					exit = False
@@ -276,21 +284,33 @@ class GSqlClientPlugin(gedit.Plugin):
 			return result
 
 		result["executed"] = True
-		cursor = db.cursor(MySQLdb.cursors.Cursor)
+
+#		cursor = db.cursor(MySQLdb.cursors.Cursor)
+		cursor = db.cursor()
+
 		try:
+
 			t1 = time.time()
 			cursor.execute(query)
 			execution_time = time.time() - t1
+
+			# http://docs.python.org/library/sqlite3.html#sqlite3.Cursor.rowcount
+			# the database engine's own support for the determination
+			# of "rows affected"/"rows selected" is quirky.
 			result["rowcount"] = cursor.rowcount
+
 			result["execution_time"] = execution_time
+
 			if cursor.description is not None:
 				result["selection"] = True
 				result["cursor"] = cursor
 				result["description"] = cursor.description
 
-		except MySQLdb.Error, e:
-			result["errno"] = e.args[0]
-			result["error"] = e.args[1]
+		except (MySQLdb.Error, sqlite3.Error), e:
+			dbw = DatabaseWrapper()
+			err = dbw.parse_error(e)
+			result["errno"] = err["errno"]
+			result["error"] = err["error"]
 
 		return result
 
@@ -311,6 +331,8 @@ class DatabaseWrapper():
 
 	def get_options(self, driver, host, user, passwd, schema):
 
+		options = None
+
 		if driver == DatabaseWrapper.DB_MYSQL:
 
 			options = {
@@ -328,20 +350,43 @@ class DatabaseWrapper():
 			else:
 				options['host'] = host
 
+			return options
+
 		elif  driver == DatabaseWrapper.DB_SQLITE:
 
 			options = {'database': schema}
+			return options
 
-		return options
+		raise Exception('Driver not valid')
 
 	def connect(self, driver, options):
 
+		db = None
+
 		if driver == DatabaseWrapper.DB_MYSQL:
 			db = MySQLdb.connect(**options)
+			return db
 		elif  driver == DatabaseWrapper.DB_SQLITE:
 			db = sqlite3.connect(**options)
+			return db
 
-		return db
+		raise Exception('Driver not valid')
+
+	def parse_error(self, exception):
+
+		result = {
+			"errno":-1,
+			"error": ''
+		}
+
+		if len(exception.args) > 1:
+			result["errno"] = exception.args[0]
+			result["error"] = exception.args[1]
+		elif len(exception.args) > 0:
+			result["errno"] = -1
+			result["error"] = exception.args[0]
+
+		return result
 
 class QueryParser():
 
