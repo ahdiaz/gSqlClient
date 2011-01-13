@@ -106,7 +106,7 @@ class GSqlClientPlugin(gedit.Plugin):
 	def _db_connect(self, view, window):
 
 		xmltree = gtk.glade.XML(self._gladeFile)
-		xmltree.signal_autoconnect(self)
+#		xmltree.signal_autoconnect(self)
 		connection_dialog = xmltree.get_widget('connectionDialog')
 		connection_dialog.set_transient_for(window)
 
@@ -116,7 +116,13 @@ class GSqlClientPlugin(gedit.Plugin):
 
 		exit = False
 		while not exit:
-			result = connection_dialog.run()
+#			result = connection_dialog.run()
+
+			d = ConnectionDialog(self._gladeFile, window)
+			result, options = d.run()
+
+			print result, options
+
 			exit = True
 
 			if result == 1:
@@ -323,8 +329,8 @@ class GSqlClientPlugin(gedit.Plugin):
 
 class DatabaseWrapper():
 
-	DB_MYSQL = 'mysql'
-	DB_SQLITE = 'sqlite'
+	DB_MYSQL = 'MySQL'
+	DB_SQLITE = 'SQLite'
 
 	def __init__(self):
 		pass
@@ -815,3 +821,72 @@ class FileExistsDialog(gtk.Dialog):
 		label = gtk.Label(message)
 		self.vbox.pack_start(label, True, True, 0)
 		label.show()
+
+class ConnectionDialog():
+
+	def __init__(self, gladeFile, window):
+
+		self.xmltree = xmltree = gtk.glade.XML(gladeFile, 'connectionDialog')
+		self.window = window
+
+	def run(self):
+
+		dic = {"on_DriverChange" : self.OnDriverChange}
+		self.xmltree.signal_autoconnect(dic)
+
+		self.dialog = self.xmltree.get_widget('connectionDialog')
+		self.dialog.set_transient_for(self.window)
+
+		self.cmbDriver = self.xmltree.get_widget('cmbDriver')
+		self.txtHost = self.xmltree.get_widget('txtHost')
+		self.txtUser = self.xmltree.get_widget('txtUser')
+		self.txtPasswd = self.xmltree.get_widget('txtPassword')
+		self.txtSchema = self.xmltree.get_widget('txtSchema')
+
+		result = self.dialog.run()
+
+		data = self.get_connection_options()
+
+		self.dialog.destroy()
+
+		return result, data
+
+	def OnDriverChange(self, widget):
+		print widget.get_active()
+		print widget.get_active_text()
+
+	def get_connection_options(self):
+
+		driver = self.cmbDriver.get_active_text()
+		host = self.txtHost.get_text().strip()
+		user = self.txtUser.get_text().strip()
+		passwd = self.txtPasswd.get_text().strip()
+		schema = self.txtSchema.get_text().strip()
+
+		options = None
+
+		if driver == DatabaseWrapper.DB_MYSQL:
+
+			options = {
+				'user': user,
+				'passwd': passwd,
+				'db': schema
+			}
+
+			if os.path.exists(host):
+				options['unix_socket'] = host
+			elif host.find(':') > 0:
+				hostport = host.split(':')
+				options['host'] = hostport[0]
+				options['port'] = int(hostport[1])
+			else:
+				options['host'] = host
+
+			return options
+
+		elif  driver == DatabaseWrapper.DB_SQLITE:
+
+			options = {'database': schema}
+			return options
+
+		raise Exception('Driver not valid')
