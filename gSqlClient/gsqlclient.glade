@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?>
+<?xml version="1.0"?>
 <glade-interface>
   <!-- interface-requires gtk+ 2.16 -->
   <!-- interface-naming-policy toplevel-contextual -->
@@ -21,7 +21,7 @@
               <widget class="GtkHBox" id="connection-hbox2">
                 <property name="visible">True</property>
                 <child>
-                  <widget class="GtkLabel" id="label5">
+                  <widget class="GtkLabel" id="lblDriver">
                     <property name="width_request">1</property>
                     <property name="visible">True</property>
                     <property name="label" translatable="yes">Driver</property>
@@ -52,7 +52,7 @@ SQLite</property>
               <widget class="GtkHBox" id="connection-hbox1">
                 <property name="visible">True</property>
                 <child>
-                  <widget class="GtkLabel" id="label1">
+                  <widget class="GtkLabel" id="lblHost">
                     <property name="width_request">1</property>
                     <property name="visible">True</property>
                     <property name="label" translatable="yes">Host</property>
@@ -82,7 +82,7 @@ SQLite</property>
               <widget class="GtkHBox" id="connection-hbox3">
                 <property name="visible">True</property>
                 <child>
-                  <widget class="GtkLabel" id="label2">
+                  <widget class="GtkLabel" id="lblUser">
                     <property name="width_request">1</property>
                     <property name="visible">True</property>
                     <property name="label" translatable="yes">User</property>
@@ -111,7 +111,7 @@ SQLite</property>
               <widget class="GtkHBox" id="connection-hbox4">
                 <property name="visible">True</property>
                 <child>
-                  <widget class="GtkLabel" id="label3">
+                  <widget class="GtkLabel" id="lblPassword">
                     <property name="width_request">1</property>
                     <property name="visible">True</property>
                     <property name="label" translatable="yes">Password</property>
@@ -141,10 +141,10 @@ SQLite</property>
               <widget class="GtkHBox" id="connection-hbox5">
                 <property name="visible">True</property>
                 <child>
-                  <widget class="GtkLabel" id="label4">
+                  <widget class="GtkLabel" id="lblSchema">
                     <property name="width_request">1</property>
                     <property name="visible">True</property>
-                    <property name="label" translatable="yes">Schema</property>
+                    <property name="label" translatable="yes">Database</property>
                     <property name="justify">right</property>
                   </widget>
                   <packing>

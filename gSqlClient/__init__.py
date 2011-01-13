@@ -29,11 +29,12 @@ import MySQLdb
 import sqlite3
 from xml.dom.minidom import getDOMImplementation
 
+gladeFile = os.path.join(os.path.dirname(__file__), 'gsqlclient.glade')
+
 class GSqlClientPlugin(gedit.Plugin):
 
 	def __init__(self):
 		gedit.Plugin.__init__(self)
-		self._gladeFile = os.path.join(os.path.dirname(__file__), "gsqlclient.glade")
 
 	def activate(self, window):
 		""" Activate plugin. """
@@ -104,70 +105,46 @@ class GSqlClientPlugin(gedit.Plugin):
 		return False
 
 	def _db_connect(self, view, window):
-
-		xmltree = gtk.glade.XML(self._gladeFile)
-#		xmltree.signal_autoconnect(self)
-		connection_dialog = xmltree.get_widget('connectionDialog')
-		connection_dialog.set_transient_for(window)
-
+		
 		db = view.get_data('db_connection')
-		if db is None:
-			xmltree.get_widget('btnDisconnect').hide()
+		d = ConnectionDialog(window, db)
+		result, options = d.run()
 
-		exit = False
-		while not exit:
-#			result = connection_dialog.run()
-
-			d = ConnectionDialog(self._gladeFile, window)
-			result, options = d.run()
-
-			print result, options
-
-			exit = True
-
-			if result == 1:
-				driver = xmltree.get_widget('txtDriver').get_text().strip()
-				host = xmltree.get_widget('txtHost').get_text().strip()
-				user = xmltree.get_widget('txtUser').get_text().strip()
-				passwd = xmltree.get_widget('txtPassword').get_text().strip()
-				schema = xmltree.get_widget('txtSchema').get_text().strip()
-
-				if db is not None:
-					self._db_disconnect(view, window)
-
-				try:
-
-					dbw = DatabaseWrapper()
-
-					options = dbw.get_options(driver, host, user, passwd, schema)
-
-					db = dbw.connect(driver, options)
-#					db = MySQLdb.connect(**options)
-
-					view.set_data('db_connection', db)
-					panel = window.get_bottom_panel()
-					rset = ResultsetPanel(panel, xmltree)
-					view.set_data('resultset_panel', rset)
-					panel.add_item(rset, 'Resultset', gtk.Image())
-
-				except (MySQLdb.Error, sqlite3.Error), e:
-					dbw = DatabaseWrapper()
-					err = dbw.parse_error(e)
-					error_dialog = ConnectionErrorDialog("\n  Error %d: %s  \n" % (err["errno"], err["error"]), window)
-					error_dialog.run()
-					error_dialog.destroy()
-					exit = False
-
-				except Exception, e:
-					error_dialog = ConnectionErrorDialog("\n  %s  \n" % (e), window)
-					error_dialog.run()
-					error_dialog.destroy()
-					exit = False
-
-			if result == 2 and db is not None:
+		if result == 1:
+			
+			if db is not None:
 				self._db_disconnect(view, window)
 
-		connection_dialog.destroy()
+			try:
+
+				dbw = DatabaseWrapper()
+				
+				driver = options['driver']
+				del options['driver']
+				db = dbw.connect(driver, options)
+
+				view.set_data('db_connection', db)
+				panel = window.get_bottom_panel()
+				rset = ResultsetPanel(panel)
+				view.set_data('resultset_panel', rset)
+				panel.add_item(rset, 'Resultset', gtk.Image())
+
+			except (MySQLdb.Error, sqlite3.Error), e:
+				dbw = DatabaseWrapper()
+				err = dbw.parse_error(e)
+				error_dialog = ConnectionErrorDialog("\n  Error %d: %s  \n" % (err["errno"], err["error"]), window)
+				error_dialog.run()
+				error_dialog.destroy()
+				exit = False
+
+			except Exception, e:
+				error_dialog = ConnectionErrorDialog("\n  %s  \n" % (e), window)
+				error_dialog.run()
+				error_dialog.destroy()
+				exit = False
+
+		if result == 2 and db is not None:
+			self._db_disconnect(view, window)
 
 	def _db_disconnect(self, view, window):
 
@@ -208,7 +185,7 @@ class GSqlClientPlugin(gedit.Plugin):
 	def _execute_script(self, view, window):
 		""" Run document as script """
 
-		xmltree = gtk.glade.XML(self._gladeFile)
+		xmltree = gtk.glade.XML(gladeFile)
 		script_dialog = xmltree.get_widget('scriptDialog')
 		script_dialog.set_transient_for(window)
 		dialog_ret = script_dialog.run()
@@ -334,36 +311,6 @@ class DatabaseWrapper():
 
 	def __init__(self):
 		pass
-
-	def get_options(self, driver, host, user, passwd, schema):
-
-		options = None
-
-		if driver == DatabaseWrapper.DB_MYSQL:
-
-			options = {
-				'user': user,
-				'passwd': passwd,
-				'db': schema
-			}
-
-			if os.path.exists(host):
-				options['unix_socket'] = host
-			elif host.find(':') > 0:
-				hostport = host.split(':')
-				options['host'] = hostport[0]
-				options['port'] = int(hostport[1])
-			else:
-				options['host'] = host
-
-			return options
-
-		elif  driver == DatabaseWrapper.DB_SQLITE:
-
-			options = {'database': schema}
-			return options
-
-		raise Exception('Driver not valid')
 
 	def connect(self, driver, options):
 
@@ -722,11 +669,13 @@ class ResultsetContextmenu(gtk.Menu):
 
 class ResultsetPanel(gtk.HBox):
 
-	def __init__(self, panel, xmltree):
+	def __init__(self, panel):
 
 		gtk.HBox.__init__(self)
 		self._panel = panel
 
+		xmltree = gtk.glade.XML(gladeFile)
+		
 		hbox = xmltree.get_widget("hboxContainer")
 
 		vbox1 = xmltree.get_widget("resultset-vbox1")
@@ -824,10 +773,11 @@ class FileExistsDialog(gtk.Dialog):
 
 class ConnectionDialog():
 
-	def __init__(self, gladeFile, window):
+	def __init__(self, window, db):
 
 		self.xmltree = xmltree = gtk.glade.XML(gladeFile, 'connectionDialog')
 		self.window = window
+		self.db = db
 
 	def run(self):
 
@@ -838,22 +788,46 @@ class ConnectionDialog():
 		self.dialog.set_transient_for(self.window)
 
 		self.cmbDriver = self.xmltree.get_widget('cmbDriver')
+		self.lblHost = self.xmltree.get_widget('lblHost')
 		self.txtHost = self.xmltree.get_widget('txtHost')
+		self.lblUser = self.xmltree.get_widget('lblUser')
 		self.txtUser = self.xmltree.get_widget('txtUser')
+		self.lblPasswd = self.xmltree.get_widget('lblPassword')
 		self.txtPasswd = self.xmltree.get_widget('txtPassword')
+		self.lblSchema = self.xmltree.get_widget('lblSchema')
 		self.txtSchema = self.xmltree.get_widget('txtSchema')
+		
+		self.cmbDriver.set_active(0)
+		
+		if self.db is None:
+			self.xmltree.get_widget('btnDisconnect').hide()
 
+		data = None
 		result = self.dialog.run()
-
-		data = self.get_connection_options()
+		
+		if result == 1:
+			data = self.get_connection_options()
 
 		self.dialog.destroy()
 
 		return result, data
 
 	def OnDriverChange(self, widget):
-		print widget.get_active()
-		print widget.get_active_text()
+	
+		if self.cmbDriver.get_active_text() == DatabaseWrapper.DB_SQLITE:
+			self.lblHost.hide()
+			self.txtHost.hide()
+			self.lblUser.hide()
+			self.txtUser.hide()
+			self.lblPasswd.hide()
+			self.txtPasswd.hide()
+		elif self.cmbDriver.get_active_text() == DatabaseWrapper.DB_MYSQL:
+			self.lblHost.show()
+			self.txtHost.show()
+			self.lblUser.show()
+			self.txtUser.show()
+			self.lblPasswd.show()
+			self.txtPasswd.show()
 
 	def get_connection_options(self):
 
@@ -863,15 +837,15 @@ class ConnectionDialog():
 		passwd = self.txtPasswd.get_text().strip()
 		schema = self.txtSchema.get_text().strip()
 
-		options = None
+		options = {'driver': driver}
 
 		if driver == DatabaseWrapper.DB_MYSQL:
 
-			options = {
+			options.update({
 				'user': user,
 				'passwd': passwd,
 				'db': schema
-			}
+			})
 
 			if os.path.exists(host):
 				options['unix_socket'] = host
@@ -882,11 +856,9 @@ class ConnectionDialog():
 			else:
 				options['host'] = host
 
-			return options
-
 		elif  driver == DatabaseWrapper.DB_SQLITE:
 
-			options = {'database': schema}
-			return options
+			options.update({'database': schema})
 
-		raise Exception('Driver not valid')
+		return options
+
