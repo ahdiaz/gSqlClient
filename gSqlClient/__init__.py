@@ -105,20 +105,20 @@ class GSqlClientPlugin(gedit.Plugin):
 		return False
 
 	def _db_connect(self, view, window):
-		
+
 		db = view.get_data('db_connection')
 		d = ConnectionDialog(window, db)
 		result, options = d.run()
 
 		if result == 1:
-			
+
 			if db is not None:
 				self._db_disconnect(view, window)
 
 			try:
 
 				dbw = DatabaseWrapper()
-				
+
 				driver = options['driver']
 				del options['driver']
 				db = dbw.connect(driver, options)
@@ -175,7 +175,7 @@ class GSqlClientPlugin(gedit.Plugin):
 				sw.show_information("Error %d: %s" % (ret["errno"], ret["error"]))
 			elif ret["selection"]:
 				sw.show_resultset(ret["cursor"], ret["execution_time"])
-				sw.get_treeview().set_data("last_query", query)
+				sw.treeview.set_data("last_query", query)
 			else:
 				sw.show_information("%s rows affected in %s" % (ret["rowcount"], ret["execution_time"]))
 
@@ -400,7 +400,7 @@ class QueryParser():
 		query = str.join("\n", query).strip()
 		if len(query) == 0:
 			query = None
-		#print query
+
 		return query
 
 	def get_all_queries(self):
@@ -498,6 +498,7 @@ class ResultsetTreeView(gtk.TreeView):
 
 		if self._contextmenu is not None:
 			self._contextmenu.destroy()
+
 		self._contextmenu = ResultsetContextmenu(treeview, path, column)
 		self._contextmenu.popup(event)
 
@@ -542,8 +543,6 @@ class ResultsetTreeView(gtk.TreeView):
 
 	def export_grid(self, widget, format):
 
-		# widget is a variable object
-
 		_columns = self.get_columns()
 		columns = []
 		for c in range(0, len(_columns)):
@@ -569,24 +568,35 @@ class ResultsetTreeView(gtk.TreeView):
 				return None
 
 		re = ResultsetExport(self.get_model(), columns)
-		if format == "xml":
-			export = re.export_xml()
-		elif format == "csv":
-			export = re.export_csv()
-		else:
+		exported = re.export(format)
+		if exported == None:
 			return None
 
 		fp = open(filename, "w")
-		fp.write(export)
+		fp.write(exported)
 		fp.close()
 
-		return export
+		return exported
 
 class ResultsetExport():
+
+	FORMAT_XML = "XML"
+	FORMAT_CSV = "CSV"
 
 	def __init__(self, model, columns):
 		self._model = model
 		self._columns = columns
+
+	def export(self, format):
+
+		exported = None
+
+		if format == ResultsetExport.FORMAT_XML:
+			exported = re.export_xml()
+		elif format == ResultsetExport.FORMAT_CSV:
+			exported = re.export_csv()
+
+		return exported
 
 	def export_xml(self):
 
@@ -619,6 +629,7 @@ class ResultsetExport():
 
 		xmlstr = doc.toxml()
 		doc.unlink()
+
 		return xmlstr
 
 	def export_csv(self):
@@ -643,25 +654,21 @@ class ResultsetContextmenu(gtk.Menu):
 
 		gtk.Menu.__init__(self)
 
-		# Create the menu items
 		copy_cell_item = gtk.MenuItem("Copy cell value")
 		copy_row_item = gtk.MenuItem("Copy row value")
 		export_xml = gtk.MenuItem("Export as XML")
 		export_csv = gtk.MenuItem("Export as CSV")
 
-		# Add them to the menu
 		self.append(copy_cell_item)
 		self.append(copy_row_item)
 		self.append(export_xml)
 		self.append(export_csv)
 
-		# Attach the callback functions to the activate signal
 		copy_cell_item.connect("activate", treeview.cell_value_to_clipboard, path, column)
 		copy_row_item.connect("activate", treeview.row_value_to_clipboard, path)
-		export_xml.connect("activate", treeview.export_grid, "xml")
-		export_csv.connect("activate", treeview.export_grid, "csv")
+		export_xml.connect("activate", treeview.export_grid, ResultsetExport.FORMAT_XML)
+		export_csv.connect("activate", treeview.export_grid, ResultsetExport.FORMAT_CSV)
 
-		# We do need to show menu items
 		self.show_all()
 
 	def popup(self, event):
@@ -675,101 +682,62 @@ class ResultsetPanel(gtk.HBox):
 		self._panel = panel
 
 		xmltree = gtk.glade.XML(gladeFile)
-		
+
 		hbox = xmltree.get_widget("hboxContainer")
 
 		vbox1 = xmltree.get_widget("resultset-vbox1")
 		vbox1.reparent(self)
 
-		self._rset_panel = xmltree.get_widget("resultset-vbox3")
-		self._rset_panel.hide()
-		self._info_panel = xmltree.get_widget("resultset-sw2")
-		self._info_panel.hide()
+		self.rset_panel = xmltree.get_widget("resultset-vbox3")
+		self.rset_panel.hide()
+		self.info_panel = xmltree.get_widget("resultset-sw2")
+		self.info_panel.hide()
 
-		self._treeview = xmltree.get_widget("treeviewResultset")
-		self._text_info = xmltree.get_widget("textviewQueryInfo")
-		self._text_error = xmltree.get_widget("textviewErrorInfo")
+		self.treeview = xmltree.get_widget("treeviewResultset")
+		self.text_info = xmltree.get_widget("textviewQueryInfo")
+		self.text_error = xmltree.get_widget("textviewErrorInfo")
 
 		sw = xmltree.get_widget("resultset-sw1")
-		sw.remove(self._treeview)
-		self._treeview.destroy()
-		self._treeview = ResultsetTreeView()
-		sw.add(self._treeview)
-
-	def get_treeview(self):
-		return self._treeview
-
-	def get_text_info(self):
-		return self._text_info
-
-	def get_text_error(self):
-		return self._text_error
+		sw.remove(self.treeview)
+		self.treeview.destroy()
+		self.treeview = ResultsetTreeView()
+		sw.add(self.treeview)
 
 	def _activate(self):
 		self._panel.set_property("visible", True)
 		self._panel.activate_item(self)
 
 	def clear_resultset(self):
-		self._treeview.clear_treeview()
-		buff = self._text_info.get_buffer()
+		self.treeview.clear_treeview()
+		buff = self.text_info.get_buffer()
 		buff.set_text("")
 
 	def show_resultset(self, cursor, execution_time):
-		self._treeview.load_cursor(cursor)
-		buff = self._text_info.get_buffer()
+		self.treeview.load_cursor(cursor)
+		buff = self.text_info.get_buffer()
 		buff.set_text("%s rows fetched in %s" % (cursor.rowcount, execution_time))
-		self._info_panel.hide()
-		self._rset_panel.show()
+		self.info_panel.hide()
+		self.rset_panel.show()
 		self._activate()
 
 	def clear_information(self):
-		buff = self._text_error.get_buffer()
+		buff = self.text_error.get_buffer()
 		buff.set_text("")
 
 	def show_information(self, message):
-		buff = self._text_error.get_buffer()
+		buff = self.text_error.get_buffer()
 		buff.set_text(message)
-		self._rset_panel.hide()
-		self._info_panel.show()
+		self.rset_panel.hide()
+		self.info_panel.show()
 		self._activate()
 
 	def append_information(self, message):
-		buff = self._text_error.get_buffer()
+		buff = self.text_error.get_buffer()
 		it = buff.get_end_iter()
 		buff.insert(it, "\n" + message)
-		self._rset_panel.hide()
-		self._info_panel.show()
+		self.rset_panel.hide()
+		self.info_panel.show()
 		self._activate()
-
-class ConnectionErrorDialog(gtk.Dialog):
-
-	def __init__(self, message, parent = None):
-		gtk.Dialog.__init__(self, title = "Connection error", parent = parent, flags = gtk.DIALOG_MODAL, buttons = None)
-		self.add_button("Close", gtk.RESPONSE_CLOSE)
-		label = gtk.Label(message)
-		self.vbox.pack_start(label, True, True, 0)
-		label.show()
-
-class ScriptErrorDialog(gtk.Dialog):
-
-	def __init__(self, message, parent = None):
-		gtk.Dialog.__init__(self, title = "Script error", parent = parent, flags = gtk.DIALOG_MODAL, buttons = None)
-		self.add_button("Ignore", 2)
-		self.add_button("Ignore all", 1)
-		self.add_button("Stop script", 0)
-		label = gtk.Label(message)
-		self.vbox.pack_start(label, True, True, 0)
-		label.show()
-
-class FileExistsDialog(gtk.Dialog):
-
-	def __init__(self, message, parent = None):
-		gtk.Dialog.__init__(self, title = "File exists", parent = parent, flags = gtk.DIALOG_MODAL, buttons = None)
-		self.add_button("Yes", 1)
-		self.add_button("Cancel", 0)
-		label = gtk.Label(message)
-		self.vbox.pack_start(label, True, True, 0)
-		label.show()
 
 class ConnectionDialog():
 
@@ -781,7 +749,7 @@ class ConnectionDialog():
 
 	def run(self):
 
-		dic = {"on_DriverChange" : self.OnDriverChange}
+		dic = {"on_DriverChange" : self.on_driver_change}
 		self.xmltree.signal_autoconnect(dic)
 
 		self.dialog = self.xmltree.get_widget('connectionDialog')
@@ -796,15 +764,15 @@ class ConnectionDialog():
 		self.txtPasswd = self.xmltree.get_widget('txtPassword')
 		self.lblSchema = self.xmltree.get_widget('lblSchema')
 		self.txtSchema = self.xmltree.get_widget('txtSchema')
-		
+
 		self.cmbDriver.set_active(0)
-		
+
 		if self.db is None:
 			self.xmltree.get_widget('btnDisconnect').hide()
 
 		data = None
 		result = self.dialog.run()
-		
+
 		if result == 1:
 			data = self.get_connection_options()
 
@@ -812,8 +780,8 @@ class ConnectionDialog():
 
 		return result, data
 
-	def OnDriverChange(self, widget):
-	
+	def on_driver_change(self, widget):
+
 		if self.cmbDriver.get_active_text() == DatabaseWrapper.DB_SQLITE:
 			self.lblHost.hide()
 			self.txtHost.hide()
@@ -862,3 +830,32 @@ class ConnectionDialog():
 
 		return options
 
+class ConnectionErrorDialog(gtk.Dialog):
+
+	def __init__(self, message, parent = None):
+		gtk.Dialog.__init__(self, title = "Connection error", parent = parent, flags = gtk.DIALOG_MODAL, buttons = None)
+		self.add_button("Close", gtk.RESPONSE_CLOSE)
+		label = gtk.Label(message)
+		self.vbox.pack_start(label, True, True, 0)
+		label.show()
+
+class ScriptErrorDialog(gtk.Dialog):
+
+	def __init__(self, message, parent = None):
+		gtk.Dialog.__init__(self, title = "Script error", parent = parent, flags = gtk.DIALOG_MODAL, buttons = None)
+		self.add_button("Ignore", 2)
+		self.add_button("Ignore all", 1)
+		self.add_button("Stop script", 0)
+		label = gtk.Label(message)
+		self.vbox.pack_start(label, True, True, 0)
+		label.show()
+
+class FileExistsDialog(gtk.Dialog):
+
+	def __init__(self, message, parent = None):
+		gtk.Dialog.__init__(self, title = "File exists", parent = parent, flags = gtk.DIALOG_MODAL, buttons = None)
+		self.add_button("Yes", 1)
+		self.add_button("Cancel", 0)
+		label = gtk.Label(message)
+		self.vbox.pack_start(label, True, True, 0)
+		label.show()
