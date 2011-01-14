@@ -39,13 +39,15 @@ class GSqlClientPlugin(gedit.Plugin):
 	def activate(self, window):
 		""" Activate plugin. """
 
+		self.window = window
+
 		id_1 = window.connect("tab-added", self._on_window_tab_added)
 		id_2 = window.connect("tab-removed", self._on_window_tab_removed)
 		window.set_data(self.__class__.__name__, (id_1, id_2))
 
 		views = window.get_views()
 		for view in views:
-			self._connect_view(view, window)
+			self._connect_view(view)
 
 	def deactivate(self, window):
 		""" Deactivate plugin. """
@@ -58,6 +60,10 @@ class GSqlClientPlugin(gedit.Plugin):
 			widget.set_data(name, None)
 		"""
 
+		views = window.get_views()
+		for view in views:
+			self._db_disconnect(view)
+
 	def _on_window_tab_added(self, window, tab):
 		""" Connect to signals of the view in tab. """
 
@@ -65,20 +71,20 @@ class GSqlClientPlugin(gedit.Plugin):
 		view = tab.get_view()
 		handler_id = view.get_data(name)
 		if handler_id is None:
-			self._connect_view(view, window)
+			self._connect_view(view)
 
 	def _on_window_tab_removed(self, window, tab):
 		""" Disconnects signals of the view in tab."""
 
-		self._db_disconnect(tab.get_view(), window)
+		self._db_disconnect(tab.get_view())
 
-	def _connect_view(self, view, window):
+	def _connect_view(self, view):
 		""" Connect to view's editing signals. """
 
-		id_1 = view.connect("key-press-event", self._on_view_key_press_event, window)
+		id_1 = view.connect("key-press-event", self._on_view_key_press_event)
 		view.set_data(self.__class__.__name__, (id_1))
 
-	def _on_view_key_press_event(self, view, event, window):
+	def _on_view_key_press_event(self, view, event):
 		""" Manage key events actions. """
 
 		if not (event.state & gtk.gdk.CONTROL_MASK):
@@ -86,7 +92,7 @@ class GSqlClientPlugin(gedit.Plugin):
 
 		# CTRL + Return
 		if event.keyval == gtk.keysyms.Return:
-			self._execute_query(view, window)
+			self._execute_query(view)
 			return True
 
 		if  not (event.state & gtk.gdk.MOD1_MASK):
@@ -94,67 +100,66 @@ class GSqlClientPlugin(gedit.Plugin):
 
 		# CTRL + ALT + C
 		if event.keyval == gtk.keysyms.c:
-			self._db_connect(view, window)
+			self._db_connect(view)
 			return True
 
 		# CTRL + ALT + R
 		if event.keyval == gtk.keysyms.r:
-			self._execute_script(view, window)
+			self._execute_script(view)
 			return True
 
 		return False
 
-	def _db_connect(self, view, window):
+	def _db_connect(self, view):
 
-		db = view.get_data('db_connection')
-		d = ConnectionDialog(window, db)
-		result, options = d.run()
+		dbw = view.get_data('dbw')
+
+		d = ConnectionDialog(self.window)
+		result, options = d.run(dbw)
 
 		if result == 1:
 
-			if db is not None:
-				self._db_disconnect(view, window)
+			if dbw != None and dbw.is_connected():
+				self._db_disconnect(view)
+
+			dbw = DatabaseWrapper(options)
 
 			try:
 
-				dbw = DatabaseWrapper()
+				dbw.connect()
 
-				driver = options['driver']
-				del options['driver']
-				db = dbw.connect(driver, options)
-
-				view.set_data('db_connection', db)
-				panel = window.get_bottom_panel()
+				panel = self.window.get_bottom_panel()
 				rset = ResultsetPanel(panel)
-				view.set_data('resultset_panel', rset)
 				panel.add_item(rset, 'Resultset', gtk.Image())
 
+				view.set_data('dbw', dbw)
+				view.set_data('resultset_panel', rset)
+
 			except (MySQLdb.Error, sqlite3.Error), e:
-				dbw = DatabaseWrapper()
 				err = dbw.parse_error(e)
-				error_dialog = ConnectionErrorDialog("\n  Error %d: %s  \n" % (err["errno"], err["error"]), window)
+				error_dialog = ConnectionErrorDialog("\n  Error %d: %s  \n" % (err["errno"], err["error"]), self.window)
 				error_dialog.run()
 				error_dialog.destroy()
 				exit = False
 
 			except Exception, e:
-				error_dialog = ConnectionErrorDialog("\n  %s  \n" % (e), window)
+				error_dialog = ConnectionErrorDialog("\n  %s  \n" % (e), self.window)
 				error_dialog.run()
 				error_dialog.destroy()
 				exit = False
 
-		if result == 2 and db is not None:
-			self._db_disconnect(view, window)
+		if result == 2:
+			self._db_disconnect(view)
 
-	def _db_disconnect(self, view, window):
+	def _db_disconnect(self, view):
 
-		db = view.get_data('db_connection')
-		if db is not None:
-			db.close()
-			self._destroy_resultset_view(view, window)
-			view.set_data('db_connection', None)
+		dbw = view.get_data('dbw')
+		if dbw != None and dbw.is_connected():
+			dbw.close()
+			self._destroy_resultset_view(view)
+			view.set_data('dbw', None)
 
-	def _execute_query(self, view, window):
+	def _execute_query(self, view):
 
 		sw = view.get_data('resultset_panel')
 		if sw is not None:
@@ -182,12 +187,12 @@ class GSqlClientPlugin(gedit.Plugin):
 			if ret["cursor"] is not None:
 				ret["cursor"].close()
 
-	def _execute_script(self, view, window):
+	def _execute_script(self, view):
 		""" Run document as script """
 
 		xmltree = gtk.glade.XML(gladeFile)
 		script_dialog = xmltree.get_widget('scriptDialog')
-		script_dialog.set_transient_for(window)
+		script_dialog.set_transient_for(self.window)
 		dialog_ret = script_dialog.run()
 
 		rbStop = xmltree.get_widget('radiobuttonStop').get_active()
@@ -228,7 +233,7 @@ class GSqlClientPlugin(gedit.Plugin):
 
 				if rbAsk:
 
-					error_dialog = ScriptErrorDialog(error_message, window)
+					error_dialog = ScriptErrorDialog(error_message, self.window)
 					error_dialog_ret = error_dialog.run()
 					error_dialog.destroy()
 
@@ -262,14 +267,13 @@ class GSqlClientPlugin(gedit.Plugin):
 			"description": None
 		}
 
-		db = view.get_data('db_connection')
-		if db is None:
+		dbw = view.get_data('dbw')
+		if dbw == None or dbw.is_connected() == False:
 			return result
 
 		result["executed"] = True
 
-#		cursor = db.cursor(MySQLdb.cursors.Cursor)
-		cursor = db.cursor()
+		cursor = dbw.cursor()
 
 		try:
 
@@ -290,16 +294,15 @@ class GSqlClientPlugin(gedit.Plugin):
 				result["description"] = cursor.description
 
 		except (MySQLdb.Error, sqlite3.Error), e:
-			dbw = DatabaseWrapper()
 			err = dbw.parse_error(e)
 			result["errno"] = err["errno"]
 			result["error"] = err["error"]
 
 		return result
 
-	def _destroy_resultset_view(self, view, window):
+	def _destroy_resultset_view(self, view):
 		sw = view.get_data('resultset_panel')
-		panel = window.get_bottom_panel()
+		panel = self.window.get_bottom_panel()
 		panel.remove_item(sw)
 		sw.destroy()
 		view.set_data('resultset_panel', None)
@@ -309,21 +312,49 @@ class DatabaseWrapper():
 	DB_MYSQL = 'MySQL'
 	DB_SQLITE = 'SQLite'
 
-	def __init__(self):
-		pass
+	def __init__(self, options):
+		self.driver = options['driver']
+		del options['driver']
+		self.options = options
 
-	def connect(self, driver, options):
+	def connect(self):
 
-		db = None
+		self.db = None
 
-		if driver == DatabaseWrapper.DB_MYSQL:
-			db = MySQLdb.connect(**options)
-			return db
-		elif  driver == DatabaseWrapper.DB_SQLITE:
-			db = sqlite3.connect(**options)
-			return db
+		if self.driver == DatabaseWrapper.DB_MYSQL:
+			self.db = MySQLdb.connect(**self.options)
+			return self.db
+
+		elif self.driver == DatabaseWrapper.DB_SQLITE:
+			self.db = sqlite3.connect(**self.options)
+			return self.db
 
 		raise Exception('Driver not valid')
+
+	def close(self):
+		if self.db != None:
+				self.db.close()
+
+	def cursor(self):
+
+		if self.db == None:
+			return None
+
+		cursor = None
+
+		if self.driver == DatabaseWrapper.DB_MYSQL:
+#			cursor = self.db.cursor(MySQLdb.cursors.Cursor)
+			cursor = self.db.cursor()
+			return cursor
+
+		elif self.driver == DatabaseWrapper.DB_SQLITE:
+			cursor = self.db.cursor()
+			return cursor
+
+		raise Exception('Driver not valid')
+
+	def is_connected(self):
+		return self.db != None
 
 	def parse_error(self, exception):
 
@@ -335,6 +366,7 @@ class DatabaseWrapper():
 		if len(exception.args) > 1:
 			result["errno"] = exception.args[0]
 			result["error"] = exception.args[1]
+
 		elif len(exception.args) > 0:
 			result["errno"] = -1
 			result["error"] = exception.args[0]
@@ -741,13 +773,12 @@ class ResultsetPanel(gtk.HBox):
 
 class ConnectionDialog():
 
-	def __init__(self, window, db):
+	def __init__(self, window):
 
 		self.xmltree = xmltree = gtk.glade.XML(gladeFile, 'connectionDialog')
 		self.window = window
-		self.db = db
 
-	def run(self):
+	def run(self, dbw):
 
 		dic = {"on_DriverChange" : self.on_driver_change}
 		self.xmltree.signal_autoconnect(dic)
@@ -767,8 +798,11 @@ class ConnectionDialog():
 
 		self.cmbDriver.set_active(0)
 
-		if self.db is None:
-			self.xmltree.get_widget('btnDisconnect').hide()
+		if dbw == None or (dbw != None and dbw.is_connected() == False):
+				self.xmltree.get_widget('btnDisconnect').hide()
+
+		if dbw != None:
+			self.set_connection_options(dbw)
 
 		data = None
 		result = self.dialog.run()
@@ -829,6 +863,30 @@ class ConnectionDialog():
 			options.update({'database': schema})
 
 		return options
+
+	def set_connection_options(self, dbw):
+
+		driver = dbw.driver
+		options = dbw.options
+#			self.cmbDriver.set_active_text(dbw.driver)
+
+		if driver == DatabaseWrapper.DB_MYSQL:
+
+			host = ''
+			if 'unix_socket' in options:
+				host = options['unix_socket']
+			elif 'port' in options:
+				host = '%s:%d' % (options['host'], options['port'])
+			else:
+				host = options['host']
+
+			self.txtHost.set_text(host)
+			self.txtUser.set_text(options['user'])
+			self.txtPasswd.set_text(options['passwd'])
+			self.txtSchema.set_text(options['db'])
+
+		elif  driver == DatabaseWrapper.DB_SQLITE:
+			self.txtSchema.set_text(options['database'])
 
 class ConnectionErrorDialog(gtk.Dialog):
 
