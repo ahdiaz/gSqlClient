@@ -137,7 +137,12 @@ class GSqlClientPlugin(gedit.Plugin):
 
 				panel = self.window.get_bottom_panel()
 				rset = ResultsetPanel(panel)
-				panel.add_item(rset, 'Resultset', gtk.Image())
+				
+				image = gtk.Image()
+				pxb = gtk.gdk.pixbuf_new_from_file(os.path.join(os.path.dirname(__file__), 'db.png'))
+				pxb = pxb.scale_simple(16, 16, gtk.gdk.INTERP_BILINEAR)
+				image.set_from_pixbuf(pxb)
+				panel.add_item(rset, 'Resultset', image)
 
 				view.set_data('dbw', dbw)
 				view.set_data('resultset_panel', rset)
@@ -872,13 +877,14 @@ class ConnectionDialog():
 		return options
 
 	def set_connection_options(self, dbw):
-
+		
 		driver = dbw.driver
 		options = dbw.options
-#			self.cmbDriver.set_active_text(dbw.driver)
 
 		if driver == DatabaseWrapper.DB_MYSQL:
-
+		
+			self.cmbDriver.set_active(0)
+			
 			host = ''
 			if 'unix_socket' in options:
 				host = options['unix_socket']
@@ -893,8 +899,12 @@ class ConnectionDialog():
 			self.txtSchema.set_text(options['db'])
 
 		elif  driver == DatabaseWrapper.DB_SQLITE:
+		
+			self.cmbDriver.set_active(1)
 			self.txtSchema.set_text(options['database'])
 
+		self.on_driver_change(None)
+		
 class ConnectionErrorDialog(gtk.Dialog):
 
 	def __init__(self, message, parent = None):
