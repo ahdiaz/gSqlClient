@@ -43,7 +43,8 @@ class GSqlClientPlugin(gedit.Plugin):
 
 		id_1 = window.connect("tab-added", self._on_window_tab_added)
 		id_2 = window.connect("tab-removed", self._on_window_tab_removed)
-		window.set_data(self.__class__.__name__, (id_1, id_2))
+		id_3 = window.connect("active-tab-changed", self._on_window_active_tab_changed)
+		window.set_data(self.__class__.__name__, (id_1, id_2, id_3))
 
 		views = window.get_views()
 		for view in views:
@@ -77,6 +78,12 @@ class GSqlClientPlugin(gedit.Plugin):
 		""" Disconnects signals of the view in tab."""
 
 		self._db_disconnect(tab.get_view())
+	
+	def _on_window_active_tab_changed(self, window, tab):
+		view = tab.get_view()
+		sw = view.get_data('resultset_panel')
+		if sw != None:
+			sw.activate()
 
 	def _connect_view(self, view):
 		""" Connect to view's editing signals. """
@@ -735,7 +742,7 @@ class ResultsetPanel(gtk.HBox):
 		self.treeview = ResultsetTreeView()
 		sw.add(self.treeview)
 
-	def _activate(self):
+	def activate(self):
 		self._panel.set_property("visible", True)
 		self._panel.activate_item(self)
 
@@ -750,7 +757,7 @@ class ResultsetPanel(gtk.HBox):
 		buff.set_text("%s rows fetched in %s" % (cursor.rowcount, execution_time))
 		self.info_panel.hide()
 		self.rset_panel.show()
-		self._activate()
+		self.activate()
 
 	def clear_information(self):
 		buff = self.text_error.get_buffer()
@@ -761,7 +768,7 @@ class ResultsetPanel(gtk.HBox):
 		buff.set_text(message)
 		self.rset_panel.hide()
 		self.info_panel.show()
-		self._activate()
+		self.activate()
 
 	def append_information(self, message):
 		buff = self.text_error.get_buffer()
@@ -769,7 +776,7 @@ class ResultsetPanel(gtk.HBox):
 		buff.insert(it, "\n" + message)
 		self.rset_panel.hide()
 		self.info_panel.show()
-		self._activate()
+		self.activate()
 
 class ConnectionDialog():
 
