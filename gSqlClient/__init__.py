@@ -18,13 +18,12 @@
 # $Id$
 #
 
-""" This plugin enables Gedit as a MySQL client. """
-
 import os
 import time
 import gedit
 import gtk
 import gtk.glade
+import hashlib
 import MySQLdb
 import sqlite3
 from xml.dom.minidom import getDOMImplementation
@@ -78,7 +77,7 @@ class GSqlClientPlugin(gedit.Plugin):
 		""" Disconnects signals of the view in tab."""
 
 		self._db_disconnect(tab.get_view())
-	
+
 	def _on_window_active_tab_changed(self, window, tab):
 		view = tab.get_view()
 		sw = view.get_data('resultset_panel')
@@ -137,7 +136,7 @@ class GSqlClientPlugin(gedit.Plugin):
 
 				panel = self.window.get_bottom_panel()
 				rset = ResultsetPanel(panel)
-				
+
 				image = gtk.Image()
 				pxb = gtk.gdk.pixbuf_new_from_file(os.path.join(os.path.dirname(__file__), 'db.png'))
 				pxb = pxb.scale_simple(16, 16, gtk.gdk.INTERP_BILINEAR)
@@ -319,15 +318,37 @@ class GSqlClientPlugin(gedit.Plugin):
 		sw.destroy()
 		view.set_data('resultset_panel', None)
 
+class DatabasePool():
+
+	DB_POOL = {}
+
+	@staticmethod
+	def get_wrapper(options, view):
+
+		dbw = None
+		for item in DatabasePool.DB_POOL:
+			print item.hash
+
+
 class DatabaseWrapper():
 
 	DB_MYSQL = 'MySQL'
 	DB_SQLITE = 'SQLite'
 
+	MYSQL_DEFAULT_PORT = 3306
+
 	def __init__(self, options):
 		self.driver = options['driver']
-		del options['driver']
 		self.options = options
+		del self.options['driver']
+		self._hash()
+
+	def _hash(self):
+		hash = self.driver
+		for option in self.options:
+			hash += str(self.options[option])
+
+		self.hash = hashlib.md5(hash).hexdigest()
 
 	def connect(self):
 
@@ -869,6 +890,7 @@ class ConnectionDialog():
 				options['port'] = int(hostport[1])
 			else:
 				options['host'] = host
+				options['port'] = DatabaseWrapper.MYSQL_DEFAULT_PORT
 
 		elif  driver == DatabaseWrapper.DB_SQLITE:
 
@@ -877,14 +899,14 @@ class ConnectionDialog():
 		return options
 
 	def set_connection_options(self, dbw):
-		
+
 		driver = dbw.driver
 		options = dbw.options
 
 		if driver == DatabaseWrapper.DB_MYSQL:
-		
+
 			self.cmbDriver.set_active(0)
-			
+
 			host = ''
 			if 'unix_socket' in options:
 				host = options['unix_socket']
@@ -899,12 +921,12 @@ class ConnectionDialog():
 			self.txtSchema.set_text(options['db'])
 
 		elif  driver == DatabaseWrapper.DB_SQLITE:
-		
+
 			self.cmbDriver.set_active(1)
 			self.txtSchema.set_text(options['database'])
 
 		self.on_driver_change(None)
-		
+
 class ConnectionErrorDialog(gtk.Dialog):
 
 	def __init__(self, message, parent = None):
