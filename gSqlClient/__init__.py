@@ -34,6 +34,7 @@ class GSqlClientPlugin(gedit.Plugin):
 
 	def __init__(self):
 		gedit.Plugin.__init__(self)
+		self.dbpool = DatabasePool()
 
 	def activate(self, window):
 		""" Activate plugin. """
@@ -128,10 +129,9 @@ class GSqlClientPlugin(gedit.Plugin):
 			if dbw != None and dbw.is_connected():
 				self._db_disconnect(view)
 
-			dbw = DatabaseWrapper(options)
+			dbw = self.dbpool.get_connection(options, view)
 
 			try:
-
 				dbw.connect()
 
 				panel = self.window.get_bottom_panel()
@@ -165,10 +165,10 @@ class GSqlClientPlugin(gedit.Plugin):
 	def _db_disconnect(self, view):
 
 		dbw = view.get_data('dbw')
-		if dbw != None and dbw.is_connected():
-			dbw.close()
-			self._destroy_resultset_view(view)
-			view.set_data('dbw', None)
+		self.dbpool.close_connection(view)
+		
+		self._destroy_resultset_view(view)
+		view.set_data('dbw', None)
 
 	def _execute_query(self, view):
 
@@ -320,15 +320,44 @@ class GSqlClientPlugin(gedit.Plugin):
 
 class DatabasePool():
 
-	DB_POOL = {}
+	def __init__(self):
+		self.db_pool = {}
+		self.views = {}
+	
+	def get_connection(self, options, view):
 
-	@staticmethod
-	def get_wrapper(options, view):
-
-		dbw = None
-		for item in DatabasePool.DB_POOL:
-			print item.hash
-
+		vhash = str(view.__hash__())
+		dbw = DatabaseWrapper(options)
+		
+		for hash in self.db_pool:
+			if hash == dbw.hash:
+				db = self.db_pool[hash]
+				db['views'].append(vhash)
+				self.views[vhash] = db
+				return db['dbw']
+		
+		item = {'dbw': dbw, 'views': [view.__hash__()]}
+		self.db_pool[dbw.hash] = item
+		self.views[vhash] = self.db_pool[dbw.hash]
+		return dbw
+	
+	def close_connection(self, view):
+		
+		vhash = str(view.__hash__())
+		if vhash not in self.views:
+			return
+		
+		print vhash
+		db = self.views[vhash]
+		db['views'].remove(vhash)
+		del self.views[vhash]
+		
+		if len(db['views']) == 0:
+			db['dbw'].close()
+			del self.db_pool[db['dbw'].hash]
+		
+		print self.db_pool
+		print self.views
 
 class DatabaseWrapper():
 
@@ -338,6 +367,7 @@ class DatabaseWrapper():
 	MYSQL_DEFAULT_PORT = 3306
 
 	def __init__(self, options):
+		self.db = None
 		self.driver = options['driver']
 		self.options = options
 		del self.options['driver']
@@ -352,7 +382,8 @@ class DatabaseWrapper():
 
 	def connect(self):
 
-		self.db = None
+		if self.db != None:
+			return self.db
 
 		if self.driver == DatabaseWrapper.DB_MYSQL:
 			self.db = MySQLdb.connect(**self.options)
@@ -367,6 +398,7 @@ class DatabaseWrapper():
 	def close(self):
 		if self.db != None:
 				self.db.close()
+				self.db = None
 
 	def cursor(self):
 
