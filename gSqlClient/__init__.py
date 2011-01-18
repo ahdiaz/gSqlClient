@@ -121,7 +121,7 @@ class GSqlClientPlugin(gedit.Plugin):
 
 		dbw = view.get_data('dbw')
 
-		d = ConnectionDialog(self.window)
+		d = ConnectionDialog(self.window, self.dbpool)
 		result, options = d.run(dbw)
 
 		if result == 1:
@@ -129,9 +129,11 @@ class GSqlClientPlugin(gedit.Plugin):
 			if dbw != None and dbw.is_connected():
 				self._db_disconnect(view)
 
-			dbw = self.dbpool.get_connection(options, view)
+			dbw = DatabaseWrapper(options)
+			self.dbpool.append(dbw)
 
 			try:
+
 				dbw.connect()
 
 				panel = self.window.get_bottom_panel()
@@ -165,10 +167,11 @@ class GSqlClientPlugin(gedit.Plugin):
 	def _db_disconnect(self, view):
 
 		dbw = view.get_data('dbw')
-		self.dbpool.close_connection(view)
-		
-		self._destroy_resultset_view(view)
-		view.set_data('dbw', None)
+		if dbw != None and dbw.is_connected():
+			self.dbpool.remove(dbw)
+			dbw.close()
+			self._destroy_resultset_view(view)
+			view.set_data('dbw', None)
 
 	def _execute_query(self, view):
 
@@ -322,42 +325,21 @@ class DatabasePool():
 
 	def __init__(self):
 		self.db_pool = {}
-		self.views = {}
-	
-	def get_connection(self, options, view):
 
-		vhash = str(view.__hash__())
-		dbw = DatabaseWrapper(options)
-		
-		for hash in self.db_pool:
-			if hash == dbw.hash:
-				db = self.db_pool[hash]
-				db['views'].append(vhash)
-				self.views[vhash] = db
-				return db['dbw']
-		
-		item = {'dbw': dbw, 'views': [view.__hash__()]}
-		self.db_pool[dbw.hash] = item
-		self.views[vhash] = self.db_pool[dbw.hash]
-		return dbw
-	
-	def close_connection(self, view):
-		
-		vhash = str(view.__hash__())
-		if vhash not in self.views:
-			return
-		
-		print vhash
-		db = self.views[vhash]
-		db['views'].remove(vhash)
-		del self.views[vhash]
-		
-		if len(db['views']) == 0:
-			db['dbw'].close()
-			del self.db_pool[db['dbw'].hash]
-		
-		print self.db_pool
-		print self.views
+	def get(self, key):
+		if key in self.db_pool:
+			return self.db_pool[key]
+		else:
+			return None
+
+	def append(self, dbw):
+		self.db_pool.update({dbw.connection_string: dbw})
+
+	def remove(self, dbw):
+		del self.db_pool[dbw.connection_string]
+
+	def keys(self):
+		return self.db_pool.keys()
 
 class DatabaseWrapper():
 
@@ -372,6 +354,7 @@ class DatabaseWrapper():
 		self.options = options
 		del self.options['driver']
 		self._hash()
+		self._connection_string()
 
 	def _hash(self):
 		hash = self.driver
@@ -379,6 +362,23 @@ class DatabaseWrapper():
 			hash += str(self.options[option])
 
 		self.hash = hashlib.md5(hash).hexdigest()
+
+	def _connection_string(self):
+
+		host = ''
+
+		if self.driver == DatabaseWrapper.DB_MYSQL:
+			if 'unix_socket' in self.options:
+				host = self.options['unix_socket']
+			else:
+				host = '%s:%d' % (self.options['host'], self.options['port'])
+
+			host = '%s@%s' % (self.options['user'], host)
+
+		elif self.driver == DatabaseWrapper.DB_SQLITE:
+			host = self.options['database']
+
+		self.connection_string = '%s://%s' % (self.driver, host)
 
 	def connect(self):
 
@@ -838,18 +838,26 @@ class ResultsetPanel(gtk.HBox):
 
 class ConnectionDialog():
 
-	def __init__(self, window):
+	def __init__(self, window, dbpool):
 
 		self.xmltree = xmltree = gtk.glade.XML(gladeFile, 'connectionDialog')
 		self.window = window
+		self.dbpool = dbpool
 
 	def run(self, dbw):
 
-		dic = {"on_DriverChange" : self.on_driver_change}
+		dic = {
+			"on_cmbReuse_changed": self.on_reuse_changed,
+			"on_cmbDriver_changed": self.on_driver_changed
+		}
 		self.xmltree.signal_autoconnect(dic)
 
 		self.dialog = self.xmltree.get_widget('connectionDialog')
 		self.dialog.set_transient_for(self.window)
+
+		self.cmbReuse = self.xmltree.get_widget('cmbReuse')
+		#self.cmbReuse = gtk.combo_box_new_text()
+		self.set_reuse_options()
 
 		self.cmbDriver = self.xmltree.get_widget('cmbDriver')
 		self.lblHost = self.xmltree.get_widget('lblHost')
@@ -879,7 +887,16 @@ class ConnectionDialog():
 
 		return result, data
 
-	def on_driver_change(self, widget):
+	def on_reuse_changed(self, widget):
+
+		key = self.cmbReuse.get_active_text()
+		dbw = self.dbpool.get(key)
+		if dbw == None:
+			return
+
+		self.set_connection_options(dbw)
+
+	def on_driver_changed(self, widget):
 
 		if self.cmbDriver.get_active_text() == DatabaseWrapper.DB_SQLITE:
 			self.lblHost.hide()
@@ -895,6 +912,17 @@ class ConnectionDialog():
 			self.txtUser.show()
 			self.lblPasswd.show()
 			self.txtPasswd.show()
+
+	def set_reuse_options(self):
+
+		self.cmbReuse.remove_text(0)
+		self.cmbReuse.append_text('')
+		keys = self.dbpool.keys()
+
+		for key in keys:
+			self.cmbReuse.append_text(key)
+
+		self.cmbReuse.set_active(0)
 
 	def get_connection_options(self):
 
@@ -957,7 +985,7 @@ class ConnectionDialog():
 			self.cmbDriver.set_active(1)
 			self.txtSchema.set_text(options['database'])
 
-		self.on_driver_change(None)
+		self.on_driver_changed(None)
 
 class ConnectionErrorDialog(gtk.Dialog):
 

@@ -5,7 +5,7 @@
   <widget class="GtkDialog" id="connectionDialog">
     <property name="width_request">350</property>
     <property name="border_width">5</property>
-    <property name="title" translatable="yes">MySQL Connection</property>
+    <property name="title" translatable="yes">Database Connection</property>
     <property name="resizable">False</property>
     <property name="modal">True</property>
     <property name="window_position">center-on-parent</property>
@@ -17,6 +17,35 @@
         <child>
           <widget class="GtkVBox" id="connection-vbox2">
             <property name="visible">True</property>
+            <child>
+              <widget class="GtkHBox" id="connection-hbox6">
+                <property name="visible">True</property>
+                <child>
+                  <widget class="GtkLabel" id="txtReuse">
+                    <property name="visible">True</property>
+                    <property name="label" translatable="yes">Reuse</property>
+                  </widget>
+                  <packing>
+                    <property name="position">0</property>
+                  </packing>
+                </child>
+                <child>
+                  <widget class="GtkComboBox" id="cmbReuse">
+                    <property name="width_request">170</property>
+                    <property name="visible">True</property>
+                    <property name="active">0</property>
+                    <property name="items" translatable="yes">_</property>
+                    <signal name="changed" handler="on_cmbReuse_changed"/>
+                  </widget>
+                  <packing>
+                    <property name="position">1</property>
+                  </packing>
+                </child>
+              </widget>
+              <packing>
+                <property name="position">0</property>
+              </packing>
+            </child>
             <child>
               <widget class="GtkHBox" id="connection-hbox2">
                 <property name="visible">True</property>
@@ -33,11 +62,12 @@
                 </child>
                 <child>
                   <widget class="GtkComboBox" id="cmbDriver">
+                    <property name="width_request">132</property>
                     <property name="visible">True</property>
                     <property name="active">0</property>
                     <property name="items" translatable="yes">MySQL
 SQLite</property>
-                    <signal name="changed" handler="on_DriverChange"/>
+                    <signal name="changed" handler="on_cmbDriver_changed"/>
                   </widget>
                   <packing>
                     <property name="position">1</property>
@@ -45,7 +75,7 @@ SQLite</property>
                 </child>
               </widget>
               <packing>
-                <property name="position">0</property>
+                <property name="position">1</property>
               </packing>
             </child>
             <child>
@@ -75,7 +105,7 @@ SQLite</property>
                 </child>
               </widget>
               <packing>
-                <property name="position">1</property>
+                <property name="position">2</property>
               </packing>
             </child>
             <child>
@@ -104,7 +134,7 @@ SQLite</property>
                 </child>
               </widget>
               <packing>
-                <property name="position">2</property>
+                <property name="position">3</property>
               </packing>
             </child>
             <child>
@@ -134,7 +164,7 @@ SQLite</property>
                 </child>
               </widget>
               <packing>
-                <property name="position">3</property>
+                <property name="position">4</property>
               </packing>
             </child>
             <child>
@@ -163,7 +193,7 @@ SQLite</property>
                 </child>
               </widget>
               <packing>
-                <property name="position">4</property>
+                <property name="position">5</property>
               </packing>
             </child>
           </widget>
