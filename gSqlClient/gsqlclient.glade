@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?>
+<?xml version="1.0"?>
 <glade-interface>
   <!-- interface-requires gtk+ 2.16 -->
   <!-- interface-naming-policy toplevel-contextual -->
@@ -6,10 +6,11 @@
     <property name="width_request">350</property>
     <property name="border_width">5</property>
     <property name="title" translatable="yes">Database Connection</property>
-    <property name="resizable">False</property>
     <property name="modal">True</property>
     <property name="window_position">center-on-parent</property>
     <property name="type_hint">dialog</property>
+    <property name="skip_taskbar_hint">True</property>
+    <property name="skip_pager_hint">True</property>
     <child internal-child="vbox">
       <widget class="GtkVBox" id="connection-vbox1">
         <property name="visible">True</property>
@@ -17,21 +18,24 @@
         <child>
           <widget class="GtkVBox" id="connection-vbox2">
             <property name="visible">True</property>
+            <property name="spacing">5</property>
+            <property name="homogeneous">True</property>
             <child>
               <widget class="GtkHBox" id="connection-hbox6">
                 <property name="visible">True</property>
                 <child>
-                  <widget class="GtkLabel" id="txtReuse">
+                  <widget class="GtkLabel" id="lblReuse">
+                    <property name="width_request">100</property>
                     <property name="visible">True</property>
                     <property name="label" translatable="yes">Reuse</property>
                   </widget>
                   <packing>
+                    <property name="expand">False</property>
                     <property name="position">0</property>
                   </packing>
                 </child>
                 <child>
                   <widget class="GtkComboBox" id="cmbReuse">
-                    <property name="width_request">170</property>
                     <property name="visible">True</property>
                     <property name="active">0</property>
                     <property name="items" translatable="yes">_</property>
@@ -43,6 +47,7 @@
                 </child>
               </widget>
               <packing>
+                <property name="fill">False</property>
                 <property name="position">0</property>
               </packing>
             </child>
@@ -51,18 +56,18 @@
                 <property name="visible">True</property>
                 <child>
                   <widget class="GtkLabel" id="lblDriver">
-                    <property name="width_request">1</property>
+                    <property name="width_request">100</property>
                     <property name="visible">True</property>
                     <property name="label" translatable="yes">Driver</property>
                     <property name="justify">right</property>
                   </widget>
                   <packing>
+                    <property name="expand">False</property>
                     <property name="position">0</property>
                   </packing>
                 </child>
                 <child>
                   <widget class="GtkComboBox" id="cmbDriver">
-                    <property name="width_request">132</property>
                     <property name="visible">True</property>
                     <property name="active">0</property>
                     <property name="items" translatable="yes">MySQL
@@ -75,6 +80,7 @@ SQLite</property>
                 </child>
               </widget>
               <packing>
+                <property name="fill">False</property>
                 <property name="position">1</property>
               </packing>
             </child>
@@ -83,12 +89,13 @@ SQLite</property>
                 <property name="visible">True</property>
                 <child>
                   <widget class="GtkLabel" id="lblHost">
-                    <property name="width_request">1</property>
+                    <property name="width_request">100</property>
                     <property name="visible">True</property>
                     <property name="label" translatable="yes">Host</property>
                     <property name="justify">right</property>
                   </widget>
                   <packing>
+                    <property name="expand">False</property>
                     <property name="position">0</property>
                   </packing>
                 </child>
@@ -105,6 +112,7 @@ SQLite</property>
                 </child>
               </widget>
               <packing>
+                <property name="fill">False</property>
                 <property name="position">2</property>
               </packing>
             </child>
@@ -113,12 +121,13 @@ SQLite</property>
                 <property name="visible">True</property>
                 <child>
                   <widget class="GtkLabel" id="lblUser">
-                    <property name="width_request">1</property>
+                    <property name="width_request">100</property>
                     <property name="visible">True</property>
                     <property name="label" translatable="yes">User</property>
                     <property name="justify">right</property>
                   </widget>
                   <packing>
+                    <property name="expand">False</property>
                     <property name="position">0</property>
                   </packing>
                 </child>
@@ -134,6 +143,7 @@ SQLite</property>
                 </child>
               </widget>
               <packing>
+                <property name="fill">False</property>
                 <property name="position">3</property>
               </packing>
             </child>
@@ -142,12 +152,13 @@ SQLite</property>
                 <property name="visible">True</property>
                 <child>
                   <widget class="GtkLabel" id="lblPassword">
-                    <property name="width_request">1</property>
+                    <property name="width_request">100</property>
                     <property name="visible">True</property>
                     <property name="label" translatable="yes">Password</property>
                     <property name="justify">right</property>
                   </widget>
                   <packing>
+                    <property name="expand">False</property>
                     <property name="position">0</property>
                   </packing>
                 </child>
@@ -164,6 +175,7 @@ SQLite</property>
                 </child>
               </widget>
               <packing>
+                <property name="fill">False</property>
                 <property name="position">4</property>
               </packing>
             </child>
@@ -172,12 +184,13 @@ SQLite</property>
                 <property name="visible">True</property>
                 <child>
                   <widget class="GtkLabel" id="lblSchema">
-                    <property name="width_request">1</property>
+                    <property name="width_request">100</property>
                     <property name="visible">True</property>
                     <property name="label" translatable="yes">Database</property>
                     <property name="justify">right</property>
                   </widget>
                   <packing>
+                    <property name="expand">False</property>
                     <property name="position">0</property>
                   </packing>
                 </child>
@@ -193,6 +206,7 @@ SQLite</property>
                 </child>
               </widget>
               <packing>
+                <property name="fill">False</property>
                 <property name="position">5</property>
               </packing>
             </child>

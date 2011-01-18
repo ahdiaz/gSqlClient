@@ -916,7 +916,7 @@ class ConnectionDialog():
 	def set_reuse_options(self):
 
 		self.cmbReuse.remove_text(0)
-		self.cmbReuse.append_text('')
+		self.cmbReuse.append_text('-----')
 		keys = self.dbpool.keys()
 
 		for key in keys:
