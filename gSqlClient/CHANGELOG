@@ -1,3 +1,9 @@
+2011-01-18	gSqlClient-0.4
+	* SQLite support.
+	* Refactorization of the ConnectionDialog class.
+	* Pool of connections.
+	* Fixed some minor bugs.
+
 2010-12-21	gSqlClient-0.3
 	* The host field is parsed correctly and now can connect using host:port or a socket file.
 
