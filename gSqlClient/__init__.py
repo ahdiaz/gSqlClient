@@ -945,9 +945,15 @@ class ConnectionDialog():
 			if os.path.exists(host):
 				options['unix_socket'] = host
 			elif host.find(':') > 0:
+				
 				hostport = host.split(':')
+				if hostport[1].isdigit():
+					port = int(hostport[1])
+				else:
+					port = DatabaseWrapper.MYSQL_DEFAULT_PORT
+				
 				options['host'] = hostport[0]
-				options['port'] = int(hostport[1])
+				options['port'] = port
 			else:
 				options['host'] = host
 				options['port'] = DatabaseWrapper.MYSQL_DEFAULT_PORT
