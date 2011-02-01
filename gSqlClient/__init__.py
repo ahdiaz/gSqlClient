@@ -26,6 +26,7 @@ import gtk.glade
 import hashlib
 import MySQLdb
 import sqlite3
+import pymssql
 from xml.dom.minidom import getDOMImplementation
 
 gladeFile = os.path.join(os.path.dirname(__file__), 'gsqlclient.glade')
@@ -344,9 +345,13 @@ class DatabasePool():
 class DatabaseWrapper():
 
 	DB_MYSQL = 'MySQL'
+	DB_POSTGRE = 'PostgreSQL'
 	DB_SQLITE = 'SQLite'
+	DB_SQLSERVER = 'SQLServer'
 
-	MYSQL_DEFAULT_PORT = 3306
+	DEFAULT_PORT_MYSQL = 3306
+	DEFAULT_PORT_POSTGRE = 5432
+	DEFAULT_PORT_SQLSERVER = 1433
 
 	def __init__(self, options):
 		self.db = None
@@ -375,6 +380,9 @@ class DatabaseWrapper():
 
 			host = '%s@%s' % (self.options['user'], host)
 
+		elif self.driver == DatabaseWrapper.DB_SQLSERVER:
+			host = '%s@%s' % (self.options['user'], self.options['host'])
+
 		elif self.driver == DatabaseWrapper.DB_SQLITE:
 			host = self.options['database']
 
@@ -391,6 +399,10 @@ class DatabaseWrapper():
 
 		elif self.driver == DatabaseWrapper.DB_SQLITE:
 			self.db = sqlite3.connect(**self.options)
+			return self.db
+
+		elif self.driver == DatabaseWrapper.DB_SQLSERVER:
+			self.db = pymssql.connect(**self.options)
 			return self.db
 
 		raise Exception('Driver not valid')
@@ -413,6 +425,10 @@ class DatabaseWrapper():
 			return cursor
 
 		elif self.driver == DatabaseWrapper.DB_SQLITE:
+			cursor = self.db.cursor()
+			return cursor
+
+		elif self.driver == DatabaseWrapper.DB_SQLSERVER:
 			cursor = self.db.cursor()
 			return cursor
 
@@ -905,7 +921,9 @@ class ConnectionDialog():
 			self.txtUser.hide()
 			self.lblPasswd.hide()
 			self.txtPasswd.hide()
-		elif self.cmbDriver.get_active_text() == DatabaseWrapper.DB_MYSQL:
+
+#		elif self.cmbDriver.get_active_text() == DatabaseWrapper.DB_MYSQL:
+		else:
 			self.lblHost.show()
 			self.txtHost.show()
 			self.lblUser.show()
@@ -945,18 +963,38 @@ class ConnectionDialog():
 			if os.path.exists(host):
 				options['unix_socket'] = host
 			elif host.find(':') > 0:
-				
+
 				hostport = host.split(':')
 				if hostport[1].isdigit():
 					port = int(hostport[1])
 				else:
-					port = DatabaseWrapper.MYSQL_DEFAULT_PORT
-				
+					port = DatabaseWrapper.DEFAULT_PORT_MYSQL
+
 				options['host'] = hostport[0]
 				options['port'] = port
 			else:
 				options['host'] = host
-				options['port'] = DatabaseWrapper.MYSQL_DEFAULT_PORT
+				options['port'] = DatabaseWrapper.DEFAULT_PORT_MYSQL
+
+		elif  driver == DatabaseWrapper.DB_SQLSERVER:
+
+			options.update({
+				'user': user,
+				'password': passwd,
+				'database': schema
+			})
+
+			port = DatabaseWrapper.DEFAULT_PORT_SQLSERVER
+
+			if host.find(':') > 0:
+
+				hostport = host.split(':')
+				if hostport[1].isdigit():
+					port = hostport[1]
+
+				host = hostport[0]
+
+			options['host'] = '%s:%s' % (host, port)
 
 		elif  driver == DatabaseWrapper.DB_SQLITE:
 
@@ -985,6 +1023,15 @@ class ConnectionDialog():
 			self.txtUser.set_text(options['user'])
 			self.txtPasswd.set_text(options['passwd'])
 			self.txtSchema.set_text(options['db'])
+
+		elif  driver == DatabaseWrapper.DB_SQLSERVER:
+
+			self.cmbDriver.set_active(2)
+
+			self.txtHost.set_text(options['host'])
+			self.txtUser.set_text(options['user'])
+			self.txtPasswd.set_text(options['password'])
+			self.txtSchema.set_text(options['database'])
 
 		elif  driver == DatabaseWrapper.DB_SQLITE:
 
