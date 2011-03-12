@@ -693,6 +693,7 @@ class ResultsetTreeView(gtk.TreeView):
 
 class ResultsetExport():
 
+	FORMAT_SQL = "SQL"
 	FORMAT_XML = "XML"
 	FORMAT_CSV = "CSV"
 
@@ -705,9 +706,11 @@ class ResultsetExport():
 		exported = None
 
 		if format == ResultsetExport.FORMAT_XML:
-			exported = re.export_xml()
+			exported = self.export_xml()
 		elif format == ResultsetExport.FORMAT_CSV:
-			exported = re.export_csv()
+			exported = self.export_csv()
+		elif format == ResultsetExport.FORMAT_SQL:
+			exported = self.export_sql()
 
 		return exported
 
@@ -761,6 +764,28 @@ class ResultsetExport():
 
 		return csvstr
 
+	def export_sql(self):
+
+		# TODO: What is the table to use if the SQL sentence is a join between more than one table?
+		table = 'table'
+		
+		str_columns = '`%s`' % (str.join('`, `', self._columns))
+		str_insert = "INSERT INTO `" + table + "` (" + str_columns + ") VALUES ('%s');\n"
+		sqlstr = ''
+		
+		it = self._model.get_iter_first()
+		while it is not None:
+			row = []
+			_row = self._model[it]
+			for value in _row:
+				if value is None:
+					value = "NULL"
+				row.append(value)
+			sqlstr += str_insert % (str.join("', '", row))
+			it = self._model.iter_next(it)
+
+		return sqlstr
+
 class ResultsetContextmenu(gtk.Menu):
 
 	def __init__(self, treeview, path, column):
@@ -769,16 +794,19 @@ class ResultsetContextmenu(gtk.Menu):
 
 		copy_cell_item = gtk.MenuItem("Copy cell value")
 		copy_row_item = gtk.MenuItem("Copy row value")
+		export_sql = gtk.MenuItem("Export as SQL")
 		export_xml = gtk.MenuItem("Export as XML")
 		export_csv = gtk.MenuItem("Export as CSV")
 
 		self.append(copy_cell_item)
 		self.append(copy_row_item)
+		self.append(export_sql)
 		self.append(export_xml)
 		self.append(export_csv)
 
 		copy_cell_item.connect("activate", treeview.cell_value_to_clipboard, path, column)
 		copy_row_item.connect("activate", treeview.row_value_to_clipboard, path)
+		export_sql.connect("activate", treeview.export_grid, ResultsetExport.FORMAT_SQL)
 		export_xml.connect("activate", treeview.export_grid, ResultsetExport.FORMAT_XML)
 		export_csv.connect("activate", treeview.export_grid, ResultsetExport.FORMAT_CSV)
 
