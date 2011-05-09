@@ -493,12 +493,13 @@ class QueryParser():
 		query = []
 		its = self._get_iter_at_cursor()
 		line = self.get_line(its)
-		if len(line) == 0:
-			return None
-
-		while its.backward_line() and len(line) > 0:
+		
+		while len(line) > 0:
 			query.append(line)
+			ret = its.backward_line()
 			line = self.get_line(its)
+			if ret == False:
+				line = ""
 		query.reverse()
 
 		its = self._get_iter_at_cursor()
