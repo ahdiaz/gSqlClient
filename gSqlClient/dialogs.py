@@ -28,7 +28,7 @@ class ConnectionDialog():
 
     def __init__(self, gladeFile, window, dbpool):
 
-        self.xmltree = xmltree = gtk.glade.XML(gladeFile, 'connectionDialog')
+        self.xmltree = gtk.glade.XML(gladeFile, 'connectionDialog')
         self.window = window
         self.dbpool = dbpool
 
@@ -44,7 +44,6 @@ class ConnectionDialog():
         self.dialog.set_transient_for(self.window)
 
         self.cmbReuse = self.xmltree.get_widget('cmbReuse')
-        #self.cmbReuse = gtk.combo_box_new_text()
         self.set_reuse_options()
 
         self.cmbDriver = self.xmltree.get_widget('cmbDriver')
@@ -57,6 +56,7 @@ class ConnectionDialog():
         self.lblSchema = self.xmltree.get_widget('lblSchema')
         self.txtSchema = self.xmltree.get_widget('txtSchema')
 
+        self.set_avaiable_drivers()
         self.cmbDriver.set_active(0)
 
         if dbc == None or (dbc != None and dbc.is_connected() == False):
@@ -75,6 +75,33 @@ class ConnectionDialog():
 
         return result, data
 
+    def set_avaiable_drivers(self):
+        
+        model = self.cmbDriver.get_model()
+        model.clear()
+        
+        try:
+            import MySQLdb
+            model.append([db.__DB_MYSQL__])
+        except ImportError, e:
+            print 'ImportError: ' + str(e)
+        
+        try:
+            import sqlite3
+            model.append([db.__DB_SQLITE__])
+        except ImportError, e:
+            print 'ImportError: ' + str(e)
+        
+        # TODO: PostgreSQL
+        
+        try:
+            import pymssql
+            model.append([db.__DB_SQLSERVER__])
+        except ImportError, e:
+            print 'ImportError: ' + str(e)
+        
+        self.cmbDriver.set_model(model)
+        
     def on_reuse_changed(self, widget):
 
         key = self.cmbReuse.get_active_text()
@@ -94,7 +121,6 @@ class ConnectionDialog():
             self.lblPasswd.hide()
             self.txtPasswd.hide()
 
-#        elif self.cmbDriver.get_active_text() == db.__DB_MYSQL__:
         else:
             self.lblHost.show()
             self.txtHost.show()
@@ -134,16 +160,20 @@ class ConnectionDialog():
 
             if os.path.exists(host):
                 options['unix_socket'] = host
+                
             elif host.find(':') > 0:
 
                 hostport = host.split(':')
+                
                 if hostport[1].isdigit():
                     port = int(hostport[1])
+                    
                 else:
                     port = db.__DEFAULT_PORT_MYSQL__
 
                 options['host'] = hostport[0]
                 options['port'] = port
+                
             else:
                 options['host'] = host
                 options['port'] = db.__DEFAULT_PORT_MYSQL__
@@ -186,8 +216,10 @@ class ConnectionDialog():
             host = ''
             if 'unix_socket' in options:
                 host = options['unix_socket']
+                
             elif 'port' in options:
                 host = '%s:%d' % (options['host'], options['port'])
+                
             else:
                 host = options['host']
 
