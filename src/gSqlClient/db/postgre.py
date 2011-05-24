@@ -25,12 +25,7 @@ class PostgreSQLConnector(db.Connector):
 
     def _create_connection_string(self):
         
-        if 'unix_socket' in self.options:
-            host = self.options['unix_socket']
-        else:
-            host = '%s:%d' % (self.options['host'], self.options['port'])
-
-        host = '%s@%s' % (self.options['user'], host)
+        host = '%s@%s:%s' % (self.options['user'], self.options['host'], self.options['port'])
         connection_string = '%s://%s' % (self.driver, host)
         
         return connection_string
