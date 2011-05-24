@@ -132,12 +132,11 @@ class GSqlClientPlugin(gedit.Plugin):
 			if dbc != None and dbc.is_connected():
 				self._db_disconnect(view)
 
-			dbc = db.get_connector(options)
-			self.dbpool.append(dbc)
-
 			try:
 
+				dbc = db.get_connector(options)
 				dbc.connect()
+				self.dbpool.append(dbc)
 
 				panel = self.window.get_bottom_panel()
 				rset = panels.ResultsetPanel(__gladeFile__, panel)
@@ -146,13 +145,13 @@ class GSqlClientPlugin(gedit.Plugin):
 				view.set_data('resultset_panel', rset)
 
 			except db.Error, e:
-				error_dialog = dialogs.ConnectionErrorDialog("\n  Error %d: %s  \n" % (e.errno, e.error), self.window)
+				error_dialog = dialogs.ConnectionErrorDialog("\n  Error %s: %s  \n" % (e.errno, e.error), self.window)
 				error_dialog.run()
 				error_dialog.destroy()
 				exit = False
 
 			except Exception, e:
-				error_dialog = dialogs.ConnectionErrorDialog("\n  %s  \n" % (e), self.window)
+				error_dialog = dialogs.ConnectionErrorDialog("\n  %s  \n" % (str(e)), self.window)
 				error_dialog.run()
 				error_dialog.destroy()
 				exit = False

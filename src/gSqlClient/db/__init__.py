@@ -56,8 +56,7 @@ def get_connector(options):
         cnn = mssql.SQLServerConnector(options)
 
     if cnn == None:
-        # raise Exception
-        pass
+        raise InvalidConnectorError(driver)
     
     return cnn
 
@@ -248,6 +247,18 @@ class QueryParser():
                 break
 
         return queries
+
+class InvalidConnectorError(Exception):
+    
+    def __init__(self, driver, message=None):
+        self.driver = driver
+        if message == None:
+            message = "Connector is not valid"
+        self.message = message
+    
+    def __str__(self):
+        return "%s: %s" % (self.message, self.driver)
+
 
 class ConnectorError(Exception):
     
