@@ -52,6 +52,7 @@ class MySQLConnector(db.Connector):
             cursor.execute(query)
             
         except (MySQLdb.Error), e:
-            raise db.Error(e.args[0], e.args[1])
+            cursor.close()
+            raise db.ConnectorError(e.args[0], e.args[1])
 
         return cursor

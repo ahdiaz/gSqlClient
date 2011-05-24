@@ -47,6 +47,7 @@ class SQLiteConnector(db.Connector):
             cursor.execute(query)
             
         except (sqlite3.Error), e:
-            raise db.Error(-1, e.args[0])
+            cursor.close()
+            raise db.ConnectorError(-1, e.args[0])
 
         return cursor
