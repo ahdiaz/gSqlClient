@@ -1,0 +1,45 @@
+Description
+-----------
+
+gSqlClient is a Python plugin that turns Gedit into a SQL client.
+Currently MySQL, PostgreSQL, SQLite and SQLServer databases are supported.
+
+Requirements
+------------
+
+You will need to install only the drivers you want to use:
+
+	* MySQL:		MySQLdb, http://mysql-python.sourceforge.net/MySQLdb.html
+	* PostgreSQL:	Psycopg, http://www.initd.org/psycopg/
+	* SQLite:		pysqlite, http://code.google.com/p/pysqlite/
+	* SQLServer:	Pymssql, http://code.google.com/p/pymssql/
+
+It is possible that your Linux distribution has precompiled packages available.
+
+Installation
+------------
+
+   1. Extract the content of the tarball under $HOME/.gnome2/gedit/plugins/ directory.
+   2. (Re)start Gedit.
+   3. Go to Edit->Preferences->Plugins and check the box for gSqlClient.
+
+Usage
+-----
+
+Create a new document and press CTRL+SHIFT+C, you will see the connection dialog. Fill the form and press the "Connect" button.
+Write some queries and be sure to separate them by empty lines, put the cursor over one of the queries and
+press CTRL+ENTER, you should see a panel with the resultset. If you want to disconnect from the server press CTRL+SHIFT+C
+again and you will see the "Disconnect" button.
+
+The query separator is an empty line so you don't need a semicolon after the query, this way allows you to have many
+queries on the same document. If you want to execute only part of a query you can select the part you are interested
+on and press CTRL+ENTER, the plugin will only execute the selection.
+
+You can execute the entire document as a script pressing CTRL+SHIFT+R.
+When pressing CTRL+SHIFT+R for running a script, a new dialog appears with options for handle query errors.
+
+There is a contextual menu with options for copy grid values and export resultsets as SQL, XML or CSV
+formats, right click on the resultset grid and select the option you want.
+
+Remember that you can have one different connection on each Gedit tab so you can query different databases from the
+same instance of Gedit.

@@ -1,3 +1,11 @@
+2011-05-24	gSqlClient-0.5
+	* Support for PostgreSQL and SQLServer.
+	* Refactorization of database connectors.
+	* Conditional import of database drivers.
+	* Added an option for export data as SQL sentences.
+	* Fixed a bug getting the query when it is at the beginning of the document.
+	* Change the keyboard shortcuts, avoid possible collisions with system shortcuts.
+
 2011-01-18	gSqlClient-0.4
 	* SQLite support.
 	* Refactorization of the ConnectionDialog class.
