@@ -102,16 +102,16 @@ class GSqlClientPlugin(gedit.Plugin):
 			self._execute_query(view)
 			return True
 
-		if  not (event.state & gtk.gdk.MOD1_MASK):
+		if  not (event.state & gtk.gdk.SHIFT_MASK):
 			return False
 
-		# CTRL + ALT + C
-		if event.keyval == gtk.keysyms.c:
+		# CTRL + SHIFT + C
+		if event.keyval == gtk.keysyms.C:
 			self._db_connect(view)
 			return True
 
-		# CTRL + ALT + R
-		if event.keyval == gtk.keysyms.r:
+		# CTRL + SHIFT + R
+		if event.keyval == gtk.keysyms.R:
 			self._execute_script(view)
 			return True
 

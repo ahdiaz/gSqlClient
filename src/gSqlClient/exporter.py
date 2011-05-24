@@ -104,8 +104,10 @@ class Exporter():
 
         # TODO: What is the table to use if the SQL sentence is a join between more than one table?
         table = 'table'
+
+        # See panels.py: ResultsetTreeView::load_cursor()
+        str_columns = ', '.join(['`%s`' % (c.replace("__", "_")) for c in columns])
         
-        str_columns = '`%s`' % (str.join('`, `', columns))
         str_insert = "INSERT INTO `" + table + "` (" + str_columns + ") VALUES ('%s');\n"
         sqlstr = ''
         
