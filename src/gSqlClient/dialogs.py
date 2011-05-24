@@ -92,7 +92,11 @@ class ConnectionDialog():
         except ImportError, e:
             print 'ImportError: ' + str(e)
         
-        # TODO: PostgreSQL
+        try:
+            import psycopg2
+            model.append([db.__DB_POSTGRE__])
+        except ImportError, e:
+            print 'ImportError: ' + str(e)
         
         try:
             import pymssql
@@ -177,6 +181,31 @@ class ConnectionDialog():
             else:
                 options['host'] = host
                 options['port'] = db.__DEFAULT_PORT_MYSQL__
+        
+        elif driver == db.__DB_POSTGRE__:
+
+            options.update({
+                'user': user,
+                'password': passwd,
+                'database': schema
+            })
+
+            if host.find(':') > 0:
+
+                hostport = host.split(':')
+                
+                if hostport[1].isdigit():
+                    port = int(hostport[1])
+                    
+                else:
+                    port = db.__DEFAULT_PORT_POSTGRE__
+
+                options['host'] = hostport[0]
+                options['port'] = port
+                
+            else:
+                options['host'] = host
+                options['port'] = db.__DEFAULT_PORT_POSTGRE__            
 
         elif  driver == db.__DB_SQLSERVER__:
 
@@ -228,9 +257,25 @@ class ConnectionDialog():
             self.txtPasswd.set_text(options['passwd'])
             self.txtSchema.set_text(options['db'])
 
+        elif driver == db.__DB_POSTGRE__:
+            
+            self.cmbDriver.set_active(2)
+
+            host = ''
+            if 'port' in options:
+                host = '%s:%d' % (options['host'], options['port'])
+                
+            else:
+                host = options['host']
+
+            self.txtHost.set_text(host)
+            self.txtUser.set_text(options['user'])
+            self.txtPasswd.set_text(options['password'])
+            self.txtSchema.set_text(options['database'])
+        
         elif  driver == db.__DB_SQLSERVER__:
 
-            self.cmbDriver.set_active(2)
+            self.cmbDriver.set_active(3)
 
             self.txtHost.set_text(options['host'])
             self.txtUser.set_text(options['user'])

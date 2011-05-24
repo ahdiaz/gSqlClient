@@ -40,10 +40,20 @@ def get_connector(options):
         import mysql
         cnn = mysql.MySQLConnector(options)
         
+    elif driver == __DB_POSTGRE__:
+        
+        import postgre
+        cnn = postgre.PostgreSQLConnector(options)
+        
     elif driver == __DB_SQLITE__:
         
         import sqlite
         cnn = sqlite.SQLiteConnector(options)
+        
+    elif driver == __DB_SQLSERVER__:
+        
+        import mssql
+        cnn = mssql.SQLServerConnector(options)
 
     if cnn == None:
         # raise Exception
@@ -109,6 +119,8 @@ class Connector():
     
         if self.is_connected() == False:
             return result
+        
+        result["executed"] = True
     
         try:
     
@@ -120,8 +132,6 @@ class Connector():
             # the database engine's own support for the determination
             # of "rows affected"/"rows selected" is quirky.
             result["rowcount"] = cursor.rowcount
-        
-            result["executed"] = True
     
             result["execution_time"] = execution_time
     
@@ -130,7 +140,7 @@ class Connector():
                 result["cursor"] = cursor
                 result["description"] = cursor.description
     
-        except Error, e:
+        except ConnectorError, e:
             result["errno"] = e.errno
             result["error"] = e.error
     
@@ -239,8 +249,11 @@ class QueryParser():
 
         return queries
 
-class Error(Exception):
+class ConnectorError(Exception):
     
     def __init__(self, errno, error):
         self.errno = errno
         self.error = error
+    
+    def __str__(self):
+        return "Error %s: %s" % (self.errno, self.error)
