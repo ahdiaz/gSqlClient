@@ -33,7 +33,7 @@ class ResultsetPanel(gtk.HBox):
         self._panel = panel
 
         image = gtk.Image()
-        pxb = gtk.gdk.pixbuf_new_from_file(os.path.join(os.path.dirname(__file__), 'db.png'))
+        pxb = gtk.gdk.pixbuf_new_from_file(os.path.join(os.path.dirname(__file__), 'pixmaps/db.png'))
         pxb = pxb.scale_simple(16, 16, gtk.gdk.INTERP_BILINEAR)
         image.set_from_pixbuf(pxb)
         panel.add_item(self, 'Resultset', image)

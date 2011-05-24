@@ -182,11 +182,13 @@ class GSqlClientPlugin(gedit.Plugin):
 			dbc = view.get_data('dbc')
 			ret = dbc.execute(query)
 			
+#			print ret
+			
 			if not ret["executed"]:
 				return
 
 			if ret["errno"] != 0:
-				sw.show_information("Error %d: %s" % (ret["errno"], ret["error"]))
+				sw.show_information("Error %s: %s" % (ret["errno"], ret["error"]))
 				
 			elif ret["selection"]:
 				sw.show_resultset(ret["cursor"], ret["execution_time"])
@@ -241,7 +243,7 @@ class GSqlClientPlugin(gedit.Plugin):
 
 			if ret["errno"] != 0:
 
-				error_message = "\n(%s) - Error %d: %s" % (n, ret["errno"], ret["error"])
+				error_message = "\n(%s) - Error %s: %s" % (n, ret["errno"], ret["error"])
 				sw.append_information(error_message)
 
 				if rbAsk:
