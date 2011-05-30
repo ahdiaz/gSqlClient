@@ -18,29 +18,47 @@
 # $Id$
 #
 
+import os
 import MySQLdb
 from .. import db
 
 class MySQLConnector(db.Connector):
-
-    def _create_connection_string(self):
+    
+    def _get_options(self):
         
-        if 'unix_socket' in self.options:
-            host = self.options['unix_socket']
+        options = {
+            "host": self.host,
+            "port": int(self.port),
+            "user": self.user,
+            "passwd": self.passwd,
+            "db": self.schema
+        }
+        
+        if len(self.socket) > 0:
+            options["unix_socket"] = self.socket
+            del options["host"]
+            del options["port"]
+        
+        return options
+
+    def update_connection_string(self):
+        
+        if len(self.socket) > 0:
+            host = self.socket
         else:
-            host = '%s:%d' % (self.options['host'], self.options['port'])
+            host = '%s:%s' % (self.host, self.port)
 
-        host = '%s@%s' % (self.options['user'], host)
-        connection_string = '%s://%s' % (self.driver, host)
+        host = '%s@%s' % (self.user, host)
         
-        return connection_string
+        self.connection_string = '%s://%s' % (self.driver, host)
     
     def connect(self):
 
         if self.db != None:
             return self.db
         
-        self.db = MySQLdb.connect(**self.options)
+        options = self._get_options()
+        self.db = MySQLdb.connect(**options)
         return self.db
 
     def _execute(self, query):

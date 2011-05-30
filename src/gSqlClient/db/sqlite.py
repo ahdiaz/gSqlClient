@@ -22,20 +22,23 @@ import sqlite3
 from .. import db
 
 class SQLiteConnector(db.Connector):
+    
+    def _get_options(self):
+        
+        options = {"database": self.schema}        
+        return options
 
-    def _create_connection_string(self):
+    def update_connection_string(self):
         
-        host = self.options['database']
-        connection_string = '%s://%s' % (self.driver, host)
-        
-        return connection_string
+        self.connection_string = '%s://%s' % (self.driver, self.schema)
 
     def connect(self):
     
         if self.db != None:
             return self.db
         
-        self.db = sqlite3.connect(**self.options)
+        options = self._get_options()
+        self.db = sqlite3.connect(**options)
         return self.db
 
     def _execute(self, query):

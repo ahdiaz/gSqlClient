@@ -22,20 +22,41 @@ import psycopg2
 from .. import db
 
 class PostgreSQLConnector(db.Connector):
+    
+    def _get_options(self):
+        
+        options = {
+            "host": self.host,
+            "port": int(self.port),
+            "user": self.user,
+            "password": self.passwd,
+            "database": self.schema
+        }
+        
+        if len(self.socket) > 0:
+            options["host"] = self.socket
+            del options["port"]
+        
+        return options
 
-    def _create_connection_string(self):
+    def update_connection_string(self):
         
-        host = '%s@%s:%s' % (self.options['user'], self.options['host'], self.options['port'])
-        connection_string = '%s://%s' % (self.driver, host)
+        if len(self.socket) > 0:
+            host = self.socket
+        else:
+            host = '%s:%s' % (self.host, self.port)
+
+        host = '%s@%s' % (self.user, host)
         
-        return connection_string
+        self.connection_string = '%s://%s' % (self.driver, host)
     
     def connect(self):
 
         if self.db != None:
             return self.db
         
-        self.db = psycopg2.connect(**self.options)
+        options = self._get_options()
+        self.db = psycopg2.connect(**options)
         return self.db
 
     def _execute(self, query):

@@ -65,19 +65,118 @@ def create_hash(options):
     hash = hashlib.md5(hash).hexdigest()
     return hash
 
+class DummyConnector:
+    # Used in ConnectionDialog
+    def __init__(self, value):
+        self.value = value
+    def get_connection_string(self):
+        return self.value
 
 class Connector():
 
     def __init__(self, options):
+        
         self.db = None
         self.hash = create_hash(options)
-        self.options = options.copy()
-        self.driver = self.options['driver']
-        del self.options['driver']
-        self.connection_string = self._create_connection_string()
+        
+        if "driver" in options:
+            driver = str(options["driver"]).strip()
+            if len(driver) == 0:
+                raise db.ConnectorError(-1, "The driver cannot be empty.")
+            self.driver = driver
+            
+        else:
+            raise db.ConnectorError(-1, "The driver cannot be empty.")
+        
+        self.host = ""
+        self.port = ""
+        self.socket = ""
+        self.user = ""
+        self.passwd = ""
+        self.schema = ""
 
-    def _create_connection_string(self):
+        if "host" in options:
+            self.set_host(options["host"])
+        
+        if "port" in options:
+            self.set_port(options["port"])
+        
+        if "socket" in options:
+            self.set_socket(options["socket"])
+        
+        if "user" in options:
+            self.set_user(options["user"])
+        
+        if "passwd" in options:
+            self.set_passwd(options["passwd"])
+        
+        if "schema" in options:
+            self.set_schema(options["schema"])
+        
+        self.update_connection_string()
+
+    def update_connection_string(self):
         pass
+    
+    def get_connection_string(self):
+        self.update_connection_string()
+        return self.connection_string
+
+    def get_driver(self):
+        return self.driver
+
+    def get_host(self):
+        return self.host
+
+    def set_host(self, host):
+        self.host = str(host).strip()
+
+    def get_port(self):
+        return self.port
+
+    def set_port(self, port):
+        self.port = str(port).strip()
+
+    def get_socket(self):
+        return self.socket
+
+    def set_socket(self, socket):
+        self.socket = str(socket).strip()
+
+    def get_user(self):
+        return self.user
+
+    def set_user(self, user):
+        self.user = str(user).strip()
+
+    def get_passwd(self):
+        return self.passwd
+
+    def set_passwd(self, passwd):
+        self.passwd = str(passwd).strip()
+
+    def get_schema(self):
+        return self.schema
+
+    def set_schema(self, schema):
+        self.schema = str(schema).strip()
+
+    def _get_options(self):
+        # Return specific driver options
+        pass
+    
+    def get_options(self):
+        # Return normalized options
+        options = {
+            "driver": self.driver,
+            "host": self.host,
+            "port": self.port,
+            "socket": self.socket,
+            "user": self.user,
+            "passwd": self.passwd,
+            "schema": self.schema
+        }
+        return options
 
     def connect(self):
         pass
