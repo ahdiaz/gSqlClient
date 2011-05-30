@@ -121,7 +121,7 @@ class GSqlClientPlugin(gedit.Plugin):
 
 		dbc = view.get_data('dbc')
 
-		d = dialogs.ConnectionDialog(__gladeFile__, self.window, self.dbpool)
+		d = dialogs.ConnectionDialog(self.window, __gladeFile__, self.dbpool)
 		result, options = d.run(dbc)
 
 		if result == 2:

@@ -21,10 +21,359 @@
 import os
 import gtk
 import gtk.glade
+import pickle
 
 import db
 
-class ConnectionDialog():
+class ConnectionDialog:
+    
+    def __init__(self, window, glade_file, dbpool):
+        
+        self.gstore = GSCStore()
+        self.dbpool = dbpool
+        self.selected = None
+        
+        xmltree = gtk.glade.XML(glade_file, 'connectionDialog_2')
+        xmltree.signal_autoconnect(self)
+        
+        self.dialog = xmltree.get_widget('connectionDialog_2')
+        self.dialog.set_transient_for(window)
+        
+        self.cmbDriver = xmltree.get_widget('cmbDriver')
+        self.lblHost = xmltree.get_widget('lblHost')
+        self.txtHost = xmltree.get_widget('txtHost')
+        self.lblPort = xmltree.get_widget('lblPort')
+        self.txtPort = xmltree.get_widget('txtPort')
+        self.lblSocket = xmltree.get_widget('lblSocket')
+        self.txtSocket = xmltree.get_widget('txtSocket')
+        self.lblUser = xmltree.get_widget('lblUser')
+        self.txtUser = xmltree.get_widget('txtUser')
+        self.lblPasswd = xmltree.get_widget('lblPassword')
+        self.txtPasswd = xmltree.get_widget('txtPassword')
+        self.lblSchema = xmltree.get_widget('lblSchema')
+        self.txtSchema = xmltree.get_widget('txtSchema')
+        self.treeview = xmltree.get_widget('tvConnections')
+        
+        self.load_drivers()
+        self.init_treeview()
+    
+    def run(self, delete_me):
+        
+        data = None
+        result = self.dialog.run()
+
+        if result == 1:
+            data = self.get_options()
+        
+        self.dialog.destroy()
+        return result, data
+    
+    def load_drivers(self):
+        
+        model = self.cmbDriver.get_model()
+        model.clear()
+        
+        try:
+            import MySQLdb
+            model.append([db.__DB_MYSQL__])
+        except ImportError, e:
+            print "ImportError: " + str(e)
+        
+        try:
+            import sqlite3
+            model.append([db.__DB_SQLITE__])
+        except ImportError, e:
+            print "ImportError: " + str(e)
+        
+        try:
+            import psycopg2
+            model.append([db.__DB_POSTGRE__])
+        except ImportError, e:
+            print "ImportError: " + str(e)
+        
+        try:
+            import pymssql
+            model.append([db.__DB_SQLSERVER__])
+        except ImportError, e:
+            print "ImportError: " + str(e)
+        
+        self.cmbDriver.set_model(model)
+    
+    def init_treeview(self):
+        
+        # create a CellRendererText to render the data
+        cell = gtk.CellRendererText()
+        
+        # create the TreeViewColumn to display the data
+        tvcolumn = gtk.TreeViewColumn('Connections')
+        
+        # add the cell to the tvcolumn and allow it to expand
+        tvcolumn.pack_start(cell, True)
+        
+        # function for showing the cell text
+        tvcolumn.set_cell_data_func(cell, self._cell_value)
+        
+        # add tvcolumn to treeview
+        self.treeview.append_column(tvcolumn)
+        
+        # set the cell "text" attribute to column 0 - retrieve text
+        # from that column in treestore
+        tvcolumn.add_attribute(cell, 'text', 0)
+        
+        # make it searchable
+        self.treeview.set_search_column(0)
+        
+        # Allow sorting on the column
+        tvcolumn.set_sort_column_id(0)
+        
+        # Allow drag and drop reordering of rows
+        self.treeview.set_reorderable(True)
+        
+        # create a TreeStore with one string column to use as the model
+        treestore = gtk.TreeStore(object)
+        
+        # update the model
+        self.treeview.set_model(treestore)
+        
+        # update the model
+        self.update_treeview()
+
+    def _cell_value(self, column, cell, model, iter):
+        cnn = model.get_value(iter, 0)
+        cell.set_property('text', cnn.get_connection_string())
+    
+    def update_treeview(self):
+        
+        # clear the model
+        treestore = self.treeview.get_model()
+        treestore.clear()
+        
+        # add the stored connections
+        cnn = db.DummyConnector('Stored')
+        self.stored = treestore.append(None, [cnn])
+        
+#        connections = self.gstore.get_connections()
+        connections = [
+            db.get_connector({
+                'driver': 'MySQL',
+                'host': 'localhost',
+                'port': 3306,
+                'user': 'ahernandez',
+                'passwd': 'ahernandez',
+                'schema': 'ahernandez_gsqlclient'
+            }),
+            db.get_connector({
+                'driver': 'MySQL',
+                'host': '192.168.2.105',
+                'port': 3307,
+                'user': 'root',
+                'passwd': 'root',
+                'schema': 'information_schema'
+            }),
+            db.get_connector({
+                'driver': 'MySQL',
+                'host': 'localhost',
+                'port': 3306,
+                'user': 'joe',
+                'passwd': 'joe',
+                'schema': 'joe_test'
+            })
+        ]
+        for connection in connections: 
+            treestore.append(self.stored, [connection])
+        
+        # add the active connections
+        cnn = db.DummyConnector('Opened')
+        self.opened = treestore.append(None, [cnn])
+        
+        opened_connections = []
+        for connection in opened_connections: 
+            treestore.append(self.opened, [connection])
+        
+        # update the model
+        self.treeview.set_model(treestore)
+        
+        # expand all nodes
+        self.treeview.expand_all()
+    
+    def update_selected_row(self):
+        if self.selected == None:
+            return
+        # Normalized options
+        options = {
+            "driver": self.cmbDriver.get_active_text(),
+            "host": self.txtHost.get_text(),
+            "port": self.txtPort.get_text(),
+            "socket": self.txtSocket.get_text(),
+            "user": self.txtUser.get_text(),
+            "passwd": self.txtPasswd.get_text(),
+            "schema": self.txtSchema.get_text()
+        }
+        cnn = db.get_connector(options)
+        model = self.treeview.get_model()
+        model.set_value(self.selected, 0, cnn)
+    
+    def get_options(self):
+        pass
+    
+    def update_form(self):
+        model = self.treeview.get_model()
+        cnn = model.get_value(self.selected, 0)
+        self.combo_set_active_by_value(self.cmbDriver, cnn.get_driver())
+        self.txtHost.set_text(cnn.get_host())
+        self.txtPort.set_text(cnn.get_port())
+        self.txtSocket.set_text(cnn.get_socket())
+        self.txtUser.set_text(cnn.get_user())
+        self.txtPasswd.set_text(cnn.get_passwd())
+        self.txtSchema.set_text(cnn.get_schema())
+        
+    def combo_set_active_by_value(self, combo, value):
+        # Set the active index by value
+        model = combo.get_model()
+        for index in range(0, len(model)):
+            row = model[index]
+            if row[0] == value:
+                combo.set_active(index)
+                break
+    
+    def on_cmbDriver_changed(self, widget):
+        
+        self.update_selected_row()
+        
+        if self.cmbDriver.get_active_text() == db.__DB_SQLITE__:
+            self.lblHost.hide()
+            self.txtHost.hide()
+            self.lblPort.hide()
+            self.txtPort.hide()
+            self.lblSocket.hide()
+            self.txtSocket.hide()
+            self.lblUser.hide()
+            self.txtUser.hide()
+            self.lblPasswd.hide()
+            self.txtPasswd.hide()
+        
+        else:
+            self.lblHost.show()
+            self.txtHost.show()
+            self.lblPort.show()
+            self.txtPort.show()
+            self.lblSocket.show()
+            self.txtSocket.show()
+            self.lblUser.show()
+            self.txtUser.show()
+            self.lblPasswd.show()
+            self.txtPasswd.show()
+    
+    def on_txtHost_changed(self, widget):
+        self.update_selected_row()
+    
+    def on_txtPort_changed(self, widget):
+        self.update_selected_row()
+    
+    def on_txtSocket_changed(self, widget):
+        self.update_selected_row()
+    
+    def on_txtUser_changed(self, widget):
+        self.update_selected_row()
+    
+    def on_txtPassword_changed(self, widget):
+        self.update_selected_row()
+    
+    def on_txtSchema_changed(self, widget):
+        self.update_selected_row()
+    
+    def on_btnAdd_clicked(self, widget):
+        # Append a new row and expand the treeview,
+        # then select the new connection and update the options
+        treestore = self.treeview.get_model()
+        new_connection = treestore.append(self.stored, ['New connection'])
+        self.treeview.expand_row(treestore.get_path(self.stored), False)
+        treeselection = self.treeview.get_selection()
+        treeselection.select_path(treestore.get_path(new_connection))
+        self.update_form()
+    
+    def on_btnRemove_clicked(self, widget):
+        treeselection = self.treeview.get_selection()
+        (model, iter) = treeselection.get_selected()
+        try:
+            parent = model.iter_parent(iter)
+            parent_path = model.get_path(parent)
+            stored_path = model.get_path(self.stored)
+            if parent_path == stored_path:
+                model.remove(iter)
+                self.update_form()
+        except Exception, e:
+            print e
+    
+    def on_tvConnections_cursor_changed(self, treeview):
+        treeselection = self.treeview.get_selection()
+        (model, iter) = treeselection.get_selected()
+        if iter == None:
+            self.selected = None
+            return
+        cnn = model.get_value(iter, 0)
+        if not isinstance(cnn, db.Connector):
+            self.selected = None
+            return
+        self.selected = iter
+        self.update_form()
+
+class GSCStore:
+    
+    def __init__(self):
+        
+        self.PROTOCOL = pickle.HIGHEST_PROTOCOL
+        self.CONNECTIONS = "connections"
+        self.SHORTCUTS = "shortcuts"
+        
+        self.data = {}
+        
+        self.file_path = os.path.join(os.path.dirname(__file__), "gscstore.pickle")
+        if os.path.isfile(self.file_path):
+            self.load_data()
+        else:
+            data = {self.CONNECTIONS: [], self.SHORTCUTS: []}
+            self.set_data(data)
+            self.save_data()
+    
+    def load_data(self):
+        fp = open(self.file_path, "rb")
+        data = pickle.load(fp)
+        fp.close()
+        self.data = data
+    
+    def save_data(self):
+        fp = open(self.file_path, "wb")
+        pickle.dump(self.data, fp, self.PROTOCOL)
+        fp.close()
+    
+    def get_data(self):
+        return self.data
+    
+    def set_data(self, data):
+        self.data = data
+    
+    def get_connections(self):
+        data = self.get_data()
+        data = data[self.CONNECTIONS]
+        return data
+    
+    def set_connections(self, connections):
+        data = self.get_data()
+        data[self.CONNECTIONS] = connections
+        self.set_data(data)
+    
+    def get_shortcuts(self):
+        data = self.get_data()
+        data = data[self.SHORTCUTS]
+        return data
+    
+    def set_shortcuts(self, shortcuts):
+        data = self.get_data()
+        data[self.SHORTCUTS] = shortcuts
+        self.set_data(data)
+
+class ConnectionDialog_old():
 
     def __init__(self, gladeFile, window, dbpool):
 
