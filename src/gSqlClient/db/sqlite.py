@@ -34,8 +34,13 @@ class SQLiteConnector(db.Connector):
     
         if self.db != None:
             return self.db
-        
-        self.db = sqlite3.connect(**self.options)
+       
+        try: 
+            self.db = sqlite3.connect(**self.options)
+
+        except sqlite3.Error, e:
+            raise db.ConnectorError(-1, e.args[0])
+
         return self.db
 
     def _execute(self, query):
@@ -46,7 +51,7 @@ class SQLiteConnector(db.Connector):
             cursor = self.cursor()
             cursor.execute(query)
             
-        except (sqlite3.Error), e:
+        except sqlite3.Error, e:
             cursor.close()
             raise db.ConnectorError(-1, e.args[0])
 

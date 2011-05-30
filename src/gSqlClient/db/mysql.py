@@ -39,8 +39,13 @@ class MySQLConnector(db.Connector):
 
         if self.db != None:
             return self.db
-        
-        self.db = MySQLdb.connect(**self.options)
+
+        try:        
+            self.db = MySQLdb.connect(**self.options)
+
+        except MySQLdb.Error, e:
+            raise db.ConnectorError(e.args[0], e.args[1])
+
         return self.db
 
     def _execute(self, query):
@@ -51,7 +56,7 @@ class MySQLConnector(db.Connector):
             cursor = self.cursor()
             cursor.execute(query)
             
-        except (MySQLdb.Error), e:
+        except MySQLdb.Error, e:
             cursor.close()
             raise db.ConnectorError(e.args[0], e.args[1])
 

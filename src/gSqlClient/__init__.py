@@ -144,12 +144,6 @@ class GSqlClientPlugin(gedit.Plugin):
 				view.set_data('dbc', dbc)
 				view.set_data('resultset_panel', rset)
 
-			except db.Error, e:
-				error_dialog = dialogs.ConnectionErrorDialog("\n  Error %s: %s  \n" % (e.errno, e.error), self.window)
-				error_dialog.run()
-				error_dialog.destroy()
-				exit = False
-
 			except Exception, e:
 				error_dialog = dialogs.ConnectionErrorDialog("\n  %s  \n" % (str(e)), self.window)
 				error_dialog.run()
@@ -179,7 +173,10 @@ class GSqlClientPlugin(gedit.Plugin):
 		if query is not None:
 
 			dbc = view.get_data('dbc')
-			ret = dbc.execute(query)
+			try:
+				ret = dbc.execute(query)
+			except Exception, e:
+				return
 			
 #			print ret
 			
@@ -232,7 +229,10 @@ class GSqlClientPlugin(gedit.Plugin):
 			if len(query) == 0:
 				continue
 
-			ret = dbc.execute(query)
+			try:
+				ret = dbc.execute(query)
+			except Exception, e:
+				continue
 
 			if not ret["executed"]:
 				continue
