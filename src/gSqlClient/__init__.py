@@ -122,19 +122,18 @@ class GSqlClientPlugin(gedit.Plugin):
 		dbc = view.get_data('dbc')
 
 		d = dialogs.ConnectionDialog(self.window, __gladeFile__, self.dbpool)
-		result, options = d.run(dbc)
+		result, new_dbc = d.run(dbc)
 
 		if result == 2:
 			self._db_disconnect(view)
 			
 		elif result == 1:
 
-			if dbc != None and dbc.is_connected():
-				self._db_disconnect(view)
+			self._db_disconnect(view)
+			dbc = new_dbc
 
 			try:
 
-				dbc = db.get_connector(options)
 				dbc.connect()
 				self.dbpool.append(dbc)
 
@@ -144,17 +143,10 @@ class GSqlClientPlugin(gedit.Plugin):
 				view.set_data('dbc', dbc)
 				view.set_data('resultset_panel', rset)
 
-			except db.Error, e:
-				error_dialog = dialogs.ConnectionErrorDialog("\n  Error %s: %s  \n" % (e.errno, e.error), self.window)
-				error_dialog.run()
-				error_dialog.destroy()
-				exit = False
-
 			except Exception, e:
 				error_dialog = dialogs.ConnectionErrorDialog("\n  %s  \n" % (str(e)), self.window)
 				error_dialog.run()
 				error_dialog.destroy()
-				exit = False
 
 	def _db_disconnect(self, view):
 
@@ -178,26 +170,27 @@ class GSqlClientPlugin(gedit.Plugin):
 
 		if query is not None:
 
-			dbc = view.get_data('dbc')
-			ret = dbc.execute(query)
+			try:
+				dbc = view.get_data('dbc')
+				ret = dbc.execute(query)
 			
-#			print ret
+#				print ret
+				
+				if ret["selection"]:
+					sw.show_resultset(ret["cursor"], ret["execution_time"])
+					
+				else:
+					sw.show_information("%s rows affected in %s" % (ret["rowcount"], ret["execution_time"]))
+	
+				if ret["cursor"] is not None:
+					ret["cursor"].close()
+
+			except db.ConnectorError, e:
+				sw.show_information("%s" % (str(e)))
+
+			except Exception, e:
+				pass
 			
-			if not ret["executed"]:
-				return
-
-			if ret["errno"] != 0:
-				sw.show_information("Error %s: %s" % (ret["errno"], ret["error"]))
-				
-			elif ret["selection"]:
-				sw.show_resultset(ret["cursor"], ret["execution_time"])
-				
-			else:
-				sw.show_information("%s rows affected in %s" % (ret["rowcount"], ret["execution_time"]))
-
-			if ret["cursor"] is not None:
-				ret["cursor"].close()
-
 	def _execute_script(self, view):
 		""" Run document as script """
 
@@ -232,21 +225,23 @@ class GSqlClientPlugin(gedit.Plugin):
 			if len(query) == 0:
 				continue
 
-			ret = dbc.execute(query)
+			try:
+				ret = dbc.execute(query)
+	
+				if ret["cursor"] is not None:
+					ret["cursor"].close()
+		
+				if ret["selection"]:
+					sw.append_information("\n(%s) - %s rows fetched in %s" % (n, ret["rowcount"], ret["execution_time"]))
+					
+				else:
+					sw.append_information("\n(%s) - %s rows affected in %s" % (n, ret["rowcount"], ret["execution_time"]))
 
-			if not ret["executed"]:
-				continue
-
-			if ret["cursor"] is not None:
-				ret["cursor"].close()
-
-			if ret["errno"] != 0:
-
-				error_message = "\n(%s) - Error %s: %s" % (n, ret["errno"], ret["error"])
+			except db.ConnectorError, e:
+				error_message = "\n(%s) - %s" % (n, str(e))
 				sw.append_information(error_message)
 
 				if rbAsk:
-
 					error_dialog = dialogs.ScriptErrorDialog(error_message, self.window)
 					error_dialog_ret = error_dialog.run()
 					error_dialog.destroy()
@@ -261,12 +256,9 @@ class GSqlClientPlugin(gedit.Plugin):
 				if rbStop:
 					break
 
-			elif ret["selection"]:
-				sw.append_information("\n(%s) - %s rows fetched in %s" % (n, ret["rowcount"], ret["execution_time"]))
-				
-			else:
-				sw.append_information("\n(%s) - %s rows affected in %s" % (n, ret["rowcount"], ret["execution_time"]))
-
+			except Exception, e:
+				pass
+			
 			n = n + 1
 
 	def _destroy_resultset_view(self, view):

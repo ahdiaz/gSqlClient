@@ -55,8 +55,13 @@ class PostgreSQLConnector(db.Connector):
         if self.db != None:
             return self.db
         
-        options = self._get_options()
-        self.db = psycopg2.connect(**options)
+        try:
+            options = self._get_options()
+            self.db = psycopg2.connect(**options)
+            
+        except psycopg2.Error, e:
+            raise db.ConnectorError(e.pgcode, e.pgerror)
+        
         return self.db
 
     def _execute(self, query):
@@ -67,7 +72,7 @@ class PostgreSQLConnector(db.Connector):
             cursor = self.cursor()
             cursor.execute(query)
             
-        except (psycopg2.Error), e:
+        except psycopg2.Error, e:
             cursor.close()
             self.db.rollback()
             raise db.ConnectorError(e.pgcode, e.pgerror)

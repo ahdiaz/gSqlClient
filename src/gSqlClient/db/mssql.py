@@ -57,8 +57,13 @@ class SQLServerConnector(db.Connector):
         if self.db != None:
             return self.db
         
-        options = self._get_options()
-        self.db = pymssql.connect(**options)
+        try:
+            options = self._get_options()
+            self.db = pymssql.connect(**options)
+        
+        except pymssql.MssqlException, e:
+            raise db.ConnectorError(e.number, e.message)
+        
         return self.db
 
     def _execute(self, query):
@@ -69,7 +74,7 @@ class SQLServerConnector(db.Connector):
             cursor = self.cursor()
             cursor.execute(query)
             
-        except (pymssql.MssqlException), e:
+        except pymssql.MssqlException, e:
             cursor.close()
             self.db.rollback()
             raise db.ConnectorError(e.number, e.message)

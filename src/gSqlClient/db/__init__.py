@@ -21,10 +21,11 @@
 import time
 import hashlib
 
-__DB_MYSQL__ = 'MySQL'
-__DB_POSTGRE__ = 'PostgreSQL'
-__DB_SQLITE__ = 'SQLite'
-__DB_SQLSERVER__ = 'SQLServer'
+__DB_NONE__ = "(None)"
+__DB_MYSQL__ = "MySQL"
+__DB_POSTGRE__ = "PostgreSQL"
+__DB_SQLITE__ = "SQLite"
+__DB_SQLSERVER__ = "SQLServer"
 
 __DEFAULT_PORT_MYSQL__ = 3306
 __DEFAULT_PORT_POSTGRE__ = 5432
@@ -59,6 +60,21 @@ def get_connector(options):
         raise InvalidConnectorError(driver)
     
     return cnn
+
+def get_default_port(driver):
+    
+    port = "";
+    
+    if driver == __DB_MYSQL__:
+        port = __DEFAULT_PORT_MYSQL__
+        
+    elif driver == __DB_POSTGRE__:
+        port = __DEFAULT_PORT_POSTGRE__
+        
+    elif driver == __DB_SQLSERVER__:
+        port = __DEFAULT_PORT_SQLSERVER__
+    
+    return port
 
 def create_hash(options):
     hash = ";".join(["%s=%s" % (k, v) for k, v in options.items()])
@@ -205,20 +221,12 @@ class Connector():
         """ Executes a SQL query """
     
         result = {
-            "executed": False,
-            "errno": 0,
-            "error": '',
             "rowcount": 0,
             "execution_time": None,
             "selection": False,
             "cursor": None,
             "description": None
         }
-    
-        if self.is_connected() == False:
-            return result
-        
-        result["executed"] = True
     
         try:
     
@@ -239,8 +247,7 @@ class Connector():
                 result["description"] = cursor.description
     
         except ConnectorError, e:
-            result["errno"] = e.errno
-            result["error"] = e.error
+            raise e
     
         return result
 
@@ -352,11 +359,11 @@ class InvalidConnectorError(Exception):
     def __init__(self, driver, message=None):
         self.driver = driver
         if message == None:
-            message = "Connector is not valid"
+            message = "Connector \"%s\" is not valid" % (driver,)
         self.message = message
     
     def __str__(self):
-        return "%s: %s" % (self.message, self.driver)
+        return "InvalidConnectorError: %s" % (self.message,)
 
 
 class ConnectorError(Exception):
