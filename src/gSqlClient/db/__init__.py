@@ -81,13 +81,6 @@ def create_hash(options):
     hash = hashlib.md5(hash).hexdigest()
     return hash
 
-class DummyConnector:
-    # Used in ConnectionDialog
-    def __init__(self, value):
-        self.value = value
-    def get_connection_string(self):
-        return self.value
-
 class Connector():
 
     def __init__(self, options):
@@ -250,6 +243,20 @@ class Connector():
             raise e
     
         return result
+
+class DummyConnector(db.Connector):
+    
+    def _get_options(self):        
+        return {}
+
+    def update_connection_string(self):
+        self.connection_string = self.driver
+    
+    def connect(self):
+        raise db.ConnectorError(-1, "This connector is used only from the treeview")
+
+    def _execute(self, query):
+        raise db.ConnectorError(-1, "This connector is used only from the treeview")
 
 class DbPool():
 
