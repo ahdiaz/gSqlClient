@@ -1,7 +1,7 @@
-[Gedit Plugin]
+[Plugin]
 Loader=python
 Module=gSqlClient
-IAge=2
+IAge=3
 Name=gSqlClient
 Description=gSqlClient turns Gedit into a SQL client.
 Authors=Antonio Hernández Díaz <ahdiaz@gmail.com>

@@ -244,7 +244,7 @@ class Connector():
     
         return result
 
-class DummyConnector(db.Connector):
+class DummyConnector(Connector):
     
     def _get_options(self):        
         return {}

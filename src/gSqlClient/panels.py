@@ -19,13 +19,12 @@
 #
 
 import os
-import gtk
-import gtk.glade
+from gi.repository import GObject, Gtk
 
 import exporter
 import dialogs
 
-class ResultsetPanel(gtk.HBox):
+class ResultsetPanel(Gtk.HBox):
 
     def __init__(self, gladeFile, panel):
 
@@ -96,7 +95,7 @@ class ResultsetPanel(gtk.HBox):
         self.info_panel.show()
         self.activate()
 
-class ResultsetTreeView(gtk.TreeView):
+class ResultsetTreeView(Gtk.TreeView):
 
     def __init__(self):
         gtk.TreeView.__init__(self)
@@ -132,7 +131,7 @@ class ResultsetTreeView(gtk.TreeView):
 
             cell = gtk.CellRendererText()
             cell.set_property("xpad", 3)
-            tvcolumn[n] = gtk.TreeViewColumn(column_name, cell, text = n + 1)
+            tvcolumn[n] = gtk.TreeViewColumn(column_name, cell, text=n + 1)
             tvcolumn[n].set_resizable(True)
             tvcolumn[n].set_data('column_id', n)
             tvcolumn[n].set_cell_data_func(cell, self._cell_value)
@@ -222,8 +221,8 @@ class ResultsetTreeView(gtk.TreeView):
             columns.append(_columns[c].get_title())
 
         chooser = gtk.FileChooserDialog(
-            title = None, action = gtk.FILE_CHOOSER_ACTION_SAVE,
-            buttons = (gtk.STOCK_CANCEL, gtk.RESPONSE_CANCEL, gtk.STOCK_OPEN, gtk.RESPONSE_OK)
+            title=None, action=gtk.FILE_CHOOSER_ACTION_SAVE,
+            buttons=(gtk.STOCK_CANCEL, gtk.RESPONSE_CANCEL, gtk.STOCK_OPEN, gtk.RESPONSE_OK)
         )
         chooser.run()
         filename = chooser.get_filename()
@@ -251,7 +250,7 @@ class ResultsetTreeView(gtk.TreeView):
 
         return exported
 
-class ResultsetContextmenu(gtk.Menu):
+class ResultsetContextmenu(Gtk.Menu):
 
     def __init__(self, treeview, path, column):
 
