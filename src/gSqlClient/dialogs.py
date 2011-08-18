@@ -57,6 +57,7 @@ class ConnectionDialog:
         self.btnAdd = xmltree.get_widget("btnAdd")
         self.btnRemove = xmltree.get_widget("btnRemove")
         self.btnSave = xmltree.get_widget("btnSave")
+        self.btnConnect = xmltree.get_widget("btnConnect")
         self.btnDisconnect = xmltree.get_widget("btnDisconnect")
         
         self.load_drivers()
@@ -257,6 +258,8 @@ class ConnectionDialog:
             self.txtPort.set_text(str(db.get_default_port(driver)))
             self.btnSave.set_sensitive(driver != db.__DB_NONE__)
         
+        self.btnConnect.set_sensitive(driver != db.__DB_NONE__)
+        
         if driver == db.__DB_SQLITE__:
             self.lblHost.hide()
             self.txtHost.hide()
@@ -391,15 +394,18 @@ class ConnectionDialog:
         
         self.btnRemove.set_sensitive(False)
         self.btnSave.set_sensitive(False)
+        self.btnConnect.set_sensitive(False)
         self.btnDisconnect.set_sensitive(False)
         self.selected = None
         
         if self.is_stored_connection(iter):
             self.btnRemove.set_sensitive(True)
+            self.btnConnect.set_sensitive(True)
             self.selected = iter
         
         if self.is_opened_connection(iter):
             self.btnDisconnect.set_sensitive(True)
+            self.btnConnect.set_sensitive(True)
             self.selected = iter
         
         self.update_form()
