@@ -182,7 +182,7 @@ class GSqlClient():
         dbc = view.get_data('dbc')
 
         d = ConnectionDialog.ConnectionDialog(self.dbpool)
-        d.set_transient_for(self.window)
+        d.dialog.set_transient_for(self.window)
         
         result, new_dbc = d.run(dbc)
 
