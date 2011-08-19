@@ -1,0 +1,148 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2011-08-19 21:39+0200\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=CHARSET\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: panels/resultsetPanelTreeview.py:140
+#, python-format
+msgid "File %s exists, overwrite?"
+msgstr ""
+
+#: panels/resultsetPanelContextmenu.py:8
+msgid "Copy cell value"
+msgstr ""
+
+#: panels/resultsetPanelContextmenu.py:9
+msgid "Copy row value"
+msgstr ""
+
+#: panels/resultsetPanelContextmenu.py:10
+msgid "Export as SQL"
+msgstr ""
+
+#: panels/resultsetPanelContextmenu.py:11
+msgid "Export as XML"
+msgstr ""
+
+#: panels/resultsetPanelContextmenu.py:12
+msgid "Export as CSV"
+msgstr ""
+
+#: panels/resultsetPanel.py:74
+#, python-format
+msgid "%s rows fetched in %s"
+msgstr ""
+
+#: db/__init__.py:24
+msgid "(None)"
+msgstr ""
+
+#: db/__init__.py:25
+msgid "MySQL"
+msgstr ""
+
+#: db/__init__.py:26
+msgid "PostgreSQL"
+msgstr ""
+
+#: db/__init__.py:27
+msgid "SQLite"
+msgstr ""
+
+#: db/__init__.py:28
+msgid "SQLServer"
+msgstr ""
+
+#: db/__init__.py:94 db/__init__.py:98
+msgid "The driver cannot be empty."
+msgstr ""
+
+#: db/__init__.py:256 db/__init__.py:259
+msgid "This connector is used only from the treeview."
+msgstr ""
+
+#: db/__init__.py:369
+#, python-format
+msgid "Connector \"%s\" is not valid."
+msgstr ""
+
+#: __init__.py:238
+#, python-format
+msgid "%s rows affected in %s"
+msgstr ""
+
+#: __init__.py:290
+#, python-format
+msgid ""
+"\n"
+"(%s) - %s rows fetched in %s"
+msgstr ""
+
+#: __init__.py:293
+#, python-format
+msgid ""
+"\n"
+"(%s) - %s rows affected in %s"
+msgstr ""
+
+#: dialogs/scriptErrorDialog.py:5
+msgid "Script error"
+msgstr ""
+
+#: dialogs/scriptErrorDialog.py:6
+msgid "Ignore"
+msgstr ""
+
+#: dialogs/scriptErrorDialog.py:7
+msgid "Ignore all"
+msgstr ""
+
+#: dialogs/scriptErrorDialog.py:8
+msgid "Stop script"
+msgstr ""
+
+#: dialogs/fileExistsDialog.py:5
+msgid "File exists"
+msgstr ""
+
+#: dialogs/fileExistsDialog.py:6
+msgid "Yes"
+msgstr ""
+
+#: dialogs/fileExistsDialog.py:7
+msgid "Cancel"
+msgstr ""
+
+#: dialogs/connectionErrorDialog.py:5
+msgid "Connection error"
+msgstr ""
+
+#: dialogs/connectionErrorDialog.py:6
+msgid "Close"
+msgstr ""
+
+#: dialogs/connectionDialog.py:164
+msgid "Stored"
+msgstr ""
+
+#: dialogs/connectionDialog.py:172
+msgid "Opened"
+msgstr ""
+
+#: dialogs/connectionDialog.py:175
+msgid "(Open new connection)"
+msgstr ""

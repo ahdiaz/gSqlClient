@@ -1,0 +1,152 @@
+# Spanish translations for gsqlclient package.
+# Copyright (C) 2011 THE gsqlclient'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the gsqlclient package.
+# AHernandez <ahdiaz@gmail.com>, 2011.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: gsqlclient 1.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2011-08-19 21:37+0200\n"
+"PO-Revision-Date: 2011-08-19 21:38+0200\n"
+"Last-Translator: AHernandez <ahdiaz@gmail.com>\n"
+"Language-Team: Spanish\n"
+"Language: es\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#: panels/resultsetPanelTreeview.py:140
+#, python-format
+msgid "File %s exists, overwrite?"
+msgstr "El fichero %s ya existe, ¿Desea sobreescribirlo?"
+
+#: panels/resultsetPanelContextmenu.py:8
+msgid "Copy cell value"
+msgstr "Copiar el valor de la celda"
+
+#: panels/resultsetPanelContextmenu.py:9
+msgid "Copy row value"
+msgstr "Copiar el valor de la columna"
+
+#: panels/resultsetPanelContextmenu.py:10
+msgid "Export as SQL"
+msgstr "Exportar como SQL"
+
+#: panels/resultsetPanelContextmenu.py:11
+msgid "Export as XML"
+msgstr "Exportar como XML"
+
+#: panels/resultsetPanelContextmenu.py:12
+msgid "Export as CSV"
+msgstr "Exportar como CSV"
+
+#: panels/resultsetPanel.py:74
+#, python-format
+msgid "%s rows fetched in %s"
+msgstr "%s filas obtenidas en %s"
+
+#: db/__init__.py:24
+msgid "(None)"
+msgstr "(Ninguno)"
+
+#: db/__init__.py:25
+msgid "MySQL"
+msgstr "MySQL"
+
+#: db/__init__.py:26
+msgid "PostgreSQL"
+msgstr "PostgreSQL"
+
+#: db/__init__.py:27
+msgid "SQLite"
+msgstr "SQLite"
+
+#: db/__init__.py:28
+msgid "SQLServer"
+msgstr "SQLServer"
+
+#: db/__init__.py:94 db/__init__.py:98
+msgid "The driver cannot be empty."
+msgstr "El driver no puede estar vacío."
+
+#: db/__init__.py:256 db/__init__.py:259
+msgid "This connector is used only from the treeview."
+msgstr "Este conector es usado solo desde el árbol."
+
+#: db/__init__.py:369
+#, python-format
+msgid "Connector \"%s\" is not valid."
+msgstr "El conector \"%s\" no es válido."
+
+#: __init__.py:238
+#, python-format
+msgid "%s rows affected in %s"
+msgstr "%s filas afectadas en %s"
+
+#: __init__.py:290
+#, python-format
+msgid ""
+"\n"
+"(%s) - %s rows fetched in %s"
+msgstr ""
+"\n"
+"(%s) - %s filas obtenidas en %s"
+
+#: __init__.py:293
+#, python-format
+msgid ""
+"\n"
+"(%s) - %s rows affected in %s"
+msgstr ""
+"\n"
+"(%s) - %s filas afectadas en %s"
+
+#: dialogs/scriptErrorDialog.py:5
+msgid "Script error"
+msgstr "Error en el script"
+
+#: dialogs/scriptErrorDialog.py:6
+msgid "Ignore"
+msgstr "Ignorar"
+
+#: dialogs/scriptErrorDialog.py:7
+msgid "Ignore all"
+msgstr "Ignorar todo"
+
+#: dialogs/scriptErrorDialog.py:8
+msgid "Stop script"
+msgstr "Detener script"
+
+#: dialogs/fileExistsDialog.py:5
+msgid "File exists"
+msgstr "El fichero existe"
+
+#: dialogs/fileExistsDialog.py:6
+msgid "Yes"
+msgstr "Sí"
+
+#: dialogs/fileExistsDialog.py:7
+msgid "Cancel"
+msgstr "Cancelar"
+
+#: dialogs/connectionErrorDialog.py:5
+msgid "Connection error"
+msgstr "Error de conexión"
+
+#: dialogs/connectionErrorDialog.py:6
+msgid "Close"
+msgstr "Cerrar"
+
+#: dialogs/connectionDialog.py:164
+msgid "Stored"
+msgstr "Guardadas"
+
+#: dialogs/connectionDialog.py:172
+msgid "Opened"
+msgstr "Abiertas"
+
+#: dialogs/connectionDialog.py:175
+msgid "(Open new connection)"
+msgstr "(Abrir nueva conexión)"
