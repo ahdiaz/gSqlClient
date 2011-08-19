@@ -113,10 +113,10 @@ class ConnectionDialog:
     def init_treeview(self):
         
         # create a CellRendererText to render the data
-        cell = gtk.CellRendererText()
+        cell = Gtk.CellRendererText()
         
         # create the TreeViewColumn to display the data
-        tvcolumn = gtk.TreeViewColumn('Connections')
+        tvcolumn = Gtk.TreeViewColumn('Connections')
         
         # add the cell to the tvcolumn and allow it to expand
         tvcolumn.pack_start(cell, True)
@@ -141,7 +141,7 @@ class ConnectionDialog:
         self.treeview.set_reorderable(True)
         
         # create a TreeStore with one string column to use as the model
-        treestore = gtk.TreeStore(object)
+        treestore = Gtk.TreeStore(object)
         
         # update the model
         self.treeview.set_model(treestore)
@@ -149,7 +149,7 @@ class ConnectionDialog:
         # update the model
         self.update_treeview()
 
-    def _cell_value(self, column, cell, model, iter):
+    def _cell_value(self, column, cell, model, iter, data=None):
         cnn = model.get_value(iter, 0)
         cell.set_property('text', cnn.get_connection_string())
     
