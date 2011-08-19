@@ -17,3 +17,5 @@
 #
 # $Id: __init__.py 62 2011-08-18 23:53:03Z ahdiaz $
 #
+
+#__all__ = ['ConnectionDialog', 'ConnectionErrorDialog']

@@ -23,41 +23,42 @@ import pickle
 from gi.repository import GObject, Gtk
 
 import db
+from .. import utils
+from .. gscstore import GSCStore
 
 class ConnectionDialog:
     
-    def __init__(self, window, glade_file, dbpool):
+    def __init__(self, dbpool):
         
         self.gstore = GSCStore()
         self.dbpool = dbpool
         self.selected = None
         
-        xmltree = gtk.glade.XML(glade_file, "connectionDialog_2")
-        xmltree.signal_autoconnect(self)
+        self.builder = Gtk.Builder()
+        self.builder.add_from_file(utils.get_ui_file('ConnectionDialog'))
+        self.builder.connect_signals(self)
+        self.dialog = self.builder.get_object('ConnectionDialog')
+                
+        self.cmbDriver = self.builder.get_object("cmbDriver")
+        self.lblHost = self.builder.get_object("lblHost")
+        self.txtHost = self.builder.get_object("txtHost")
+        self.lblPort = self.builder.get_object("lblPort")
+        self.txtPort = self.builder.get_object("txtPort")
+        self.lblSocket = self.builder.get_object("lblSocket")
+        self.txtSocket = self.builder.get_object("txtSocket")
+        self.lblUser = self.builder.get_object("lblUser")
+        self.txtUser = self.builder.get_object("txtUser")
+        self.lblPasswd = self.builder.get_object("lblPassword")
+        self.txtPasswd = self.builder.get_object("txtPassword")
+        self.lblSchema = self.builder.get_object("lblSchema")
+        self.txtSchema = self.builder.get_object("txtSchema")
+        self.treeview = self.builder.get_object("tvConnections")
         
-        self.dialog = xmltree.get_widget("connectionDialog_2")
-        self.dialog.set_transient_for(window)
-        
-        self.cmbDriver = xmltree.get_widget("cmbDriver")
-        self.lblHost = xmltree.get_widget("lblHost")
-        self.txtHost = xmltree.get_widget("txtHost")
-        self.lblPort = xmltree.get_widget("lblPort")
-        self.txtPort = xmltree.get_widget("txtPort")
-        self.lblSocket = xmltree.get_widget("lblSocket")
-        self.txtSocket = xmltree.get_widget("txtSocket")
-        self.lblUser = xmltree.get_widget("lblUser")
-        self.txtUser = xmltree.get_widget("txtUser")
-        self.lblPasswd = xmltree.get_widget("lblPassword")
-        self.txtPasswd = xmltree.get_widget("txtPassword")
-        self.lblSchema = xmltree.get_widget("lblSchema")
-        self.txtSchema = xmltree.get_widget("txtSchema")
-        self.treeview = xmltree.get_widget("tvConnections")
-        
-        self.btnAdd = xmltree.get_widget("btnAdd")
-        self.btnRemove = xmltree.get_widget("btnRemove")
-        self.btnSave = xmltree.get_widget("btnSave")
-        self.btnConnect = xmltree.get_widget("btnConnect")
-        self.btnDisconnect = xmltree.get_widget("btnDisconnect")
+        self.btnAdd = self.builder.get_object("btnAdd")
+        self.btnRemove = self.builder.get_object("btnRemove")
+        self.btnSave = self.builder.get_object("btnSave")
+        self.btnConnect = self.builder.get_object("btnConnect")
+        self.btnDisconnect = self.builder.get_object("btnDisconnect")
         
         self.load_drivers()
         self.init_treeview()
