@@ -24,6 +24,10 @@ from gi.repository import GObject, Gtk
 from .. import utils, db
 from .. gscstore import GSCStore
 
+import gettext
+from gettext import gettext as _
+gettext.textdomain('gsqlclient')
+
 class ConnectionDialog:
     
     def __init__(self, dbpool):
@@ -60,6 +64,21 @@ class ConnectionDialog:
         
         self.load_drivers()
         self.init_treeview()
+        self.translate()
+    
+    def translate(self):
+        self.lblHost.set_text(_('Host'))
+        self.lblPort.set_text(_('Port'))
+        self.lblSocket.set_text(_('Socket'))
+        self.lblUser.set_text(_('User'))
+        self.lblPasswd.set_text(_('Password'))
+        self.lblSchema.set_text(_('Schema'))
+        
+        self.btnAdd.set_label(_('Add'))
+        self.btnRemove.set_label(_('Remove'))
+        self.btnSave.set_label(_('Save'))
+        self.btnConnect.set_label(_('Connect'))
+        self.btnDisconnect.set_label(_('Disconnect'))
     
     def run(self, active_connection):
         
@@ -116,7 +135,7 @@ class ConnectionDialog:
         cell = Gtk.CellRendererText()
         
         # create the TreeViewColumn to display the data
-        tvcolumn = Gtk.TreeViewColumn('Connections')
+        tvcolumn = Gtk.TreeViewColumn(_('Connections'))
         
         # add the cell to the tvcolumn and allow it to expand
         tvcolumn.pack_start(cell, True)
