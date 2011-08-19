@@ -250,6 +250,9 @@ class Connector():
 
 class DummyConnector(Connector):
     
+    def __init__(self, name):
+        self.driver = name
+        
     def _get_options(self):        
         return {}
 
