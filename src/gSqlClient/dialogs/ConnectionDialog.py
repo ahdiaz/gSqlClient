@@ -19,11 +19,9 @@
 #
 
 import os
-import pickle
 from gi.repository import GObject, Gtk
 
-import db
-from .. import utils
+from .. import utils, db
 from .. gscstore import GSCStore
 
 class ConnectionDialog:

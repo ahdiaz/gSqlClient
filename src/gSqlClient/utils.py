@@ -24,7 +24,7 @@ def get_data_file(*path_segments):
     return os.path.join(get_data_path(), *path_segments)
 
 def get_data_path():
-    path = os.path.join(os.path.dirname(__file__), '/data')
+    path = os.path.join(os.path.dirname(__file__), 'data')
 
     abs_data_path = os.path.abspath(path)
     if not os.path.exists(abs_data_path):
@@ -37,14 +37,14 @@ def get_media_file(media_file_name):
     if not os.path.exists(media_filename):
         media_filename = None
 
-    return "file:///" + media_filename
+    return media_filename
 
 def get_ui_file(ui_file_name):
-    ui_filename = get_data_file('ui', '%s' % (ui_file_name,))
+    ui_filename = get_data_file('ui', '%s.ui' % (ui_file_name,))
     if not os.path.exists(ui_filename):
         ui_filename = None
 
-    return "file:///" + ui_filename
+    return ui_filename
 
 def get_locale_path():
     return os.path.join(os.path.dirname(__file__), 'po')

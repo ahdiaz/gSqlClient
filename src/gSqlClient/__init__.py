@@ -24,7 +24,7 @@ from gi.repository import GObject, Gtk, Gdk, Gedit
 import utils
 import db
 import panels
-import dialogs
+from dialogs import ConnectionDialog
 
 import gettext
 from gettext import gettext as _
@@ -181,7 +181,9 @@ class GSqlClient():
 
         dbc = view.get_data('dbc')
 
-        d = dialogs.ConnectionDialog(self.window, __gladeFile__, self.dbpool)
+        d = ConnectionDialog.ConnectionDialog(self.dbpool)
+        d.set_transient_for(self.window)
+        
         result, new_dbc = d.run(dbc)
 
         if result == 2:
