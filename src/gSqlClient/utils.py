@@ -45,3 +45,6 @@ def get_ui_file(ui_file_name):
         ui_filename = None
 
     return "file:///" + ui_filename
+
+def get_locale_path():
+    return os.path.join(os.path.dirname(__file__), 'po')
