@@ -161,7 +161,7 @@ class ConnectionDialog:
         treestore.clear()
         
         # add the stored connections
-        cnn = db.DummyConnector('Stored')
+        cnn = db.DummyConnector(_('Stored'))
         self.stored = treestore.append(None, [cnn])
         
         connections = self.gstore.get_connections()
@@ -169,10 +169,10 @@ class ConnectionDialog:
             treestore.append(self.stored, [connection])
         
         # add the active connections
-        cnn = db.DummyConnector('Opened')
+        cnn = db.DummyConnector(_('Opened'))
         self.opened = treestore.append(None, [cnn])
         
-        cnn = db.DummyConnector('(Open new connection)')
+        cnn = db.DummyConnector(_('(Open new connection)'))
         treestore.append(self.opened, [cnn])
         
         for key in self.dbpool.keys():

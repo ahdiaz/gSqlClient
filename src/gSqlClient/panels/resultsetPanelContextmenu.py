@@ -5,11 +5,11 @@ class ResultsetContextmenu(Gtk.Menu):
 
         gtk.Menu.__init__(self)
 
-        copy_cell_item = gtk.MenuItem("Copy cell value")
-        copy_row_item = gtk.MenuItem("Copy row value")
-        export_sql = gtk.MenuItem("Export as SQL")
-        export_xml = gtk.MenuItem("Export as XML")
-        export_csv = gtk.MenuItem("Export as CSV")
+        copy_cell_item = gtk.MenuItem(_("Copy cell value"))
+        copy_row_item = gtk.MenuItem(_("Copy row value"))
+        export_sql = gtk.MenuItem(_("Export as SQL"))
+        export_xml = gtk.MenuItem(_("Export as XML"))
+        export_csv = gtk.MenuItem(_("Export as CSV"))
 
         self.append(copy_cell_item)
         self.append(copy_row_item)

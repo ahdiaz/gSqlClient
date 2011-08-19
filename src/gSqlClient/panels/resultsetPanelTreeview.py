@@ -137,7 +137,7 @@ class ResultsetTreeView(Gtk.TreeView):
 
         if os.path.isfile(filename):
 
-            file_dialog = dialogs.FileExistsDialog("File " + filename + " exists, overwrite?", None)
+            file_dialog = dialogs.FileExistsDialog(_("File %s exists, overwrite?") % (filename,), None)
             file_dialog_ret = file_dialog.run()
             file_dialog.destroy()
             if file_dialog_ret == 0:

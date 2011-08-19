@@ -235,7 +235,7 @@ class GSqlClient():
                     sw.show_resultset(ret["cursor"], ret["execution_time"])
                     
                 else:
-                    sw.show_information("%s rows affected in %s" % (ret["rowcount"], ret["execution_time"]))
+                    sw.show_information(_("%s rows affected in %s") % (ret["rowcount"], ret["execution_time"]))
     
                 if ret["cursor"] is not None:
                     ret["cursor"].close()
@@ -287,10 +287,10 @@ class GSqlClient():
                     ret["cursor"].close()
         
                 if ret["selection"]:
-                    sw.append_information("\n(%s) - %s rows fetched in %s" % (n, ret["rowcount"], ret["execution_time"]))
+                    sw.append_information(_("\n(%s) - %s rows fetched in %s") % (n, ret["rowcount"], ret["execution_time"]))
                     
                 else:
-                    sw.append_information("\n(%s) - %s rows affected in %s" % (n, ret["rowcount"], ret["execution_time"]))
+                    sw.append_information(_("\n(%s) - %s rows affected in %s") % (n, ret["rowcount"], ret["execution_time"]))
 
             except db.ConnectorError, e:
                 error_message = "\n(%s) - %s" % (n, str(e))

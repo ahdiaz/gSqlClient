@@ -21,11 +21,11 @@
 import time
 import hashlib
 
-__DB_NONE__ = "(None)"
-__DB_MYSQL__ = "MySQL"
-__DB_POSTGRE__ = "PostgreSQL"
-__DB_SQLITE__ = "SQLite"
-__DB_SQLSERVER__ = "SQLServer"
+__DB_NONE__ = _("(None)")
+__DB_MYSQL__ = _("MySQL")
+__DB_POSTGRE__ = _("PostgreSQL")
+__DB_SQLITE__ = _("SQLite")
+__DB_SQLSERVER__ = _("SQLServer")
 
 __DEFAULT_PORT_MYSQL__ = 3306
 __DEFAULT_PORT_POSTGRE__ = 5432
@@ -91,11 +91,11 @@ class Connector():
         if "driver" in options:
             driver = str(options["driver"]).strip()
             if len(driver) == 0:
-                raise db.ConnectorError(-1, "The driver cannot be empty.")
+                raise db.ConnectorError(-1, _("The driver cannot be empty."))
             self.driver = driver
             
         else:
-            raise db.ConnectorError(-1, "The driver cannot be empty.")
+            raise db.ConnectorError(-1, _("The driver cannot be empty."))
         
         self.host = ""
         self.port = ""
@@ -253,10 +253,10 @@ class DummyConnector(Connector):
         self.connection_string = self.driver
     
     def connect(self):
-        raise db.ConnectorError(-1, "This connector is used only from the treeview")
+        raise db.ConnectorError(-1, _("This connector is used only from the treeview."))
 
     def _execute(self, query):
-        raise db.ConnectorError(-1, "This connector is used only from the treeview")
+        raise db.ConnectorError(-1, _("This connector is used only from the treeview."))
 
 class DbPool():
 
@@ -366,7 +366,7 @@ class InvalidConnectorError(Exception):
     def __init__(self, driver, message=None):
         self.driver = driver
         if message == None:
-            message = "Connector \"%s\" is not valid" % (driver,)
+            message = _("Connector \"%s\" is not valid.") % (driver,)
         self.message = message
     
     def __str__(self):
