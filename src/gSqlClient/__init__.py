@@ -36,7 +36,7 @@ class GSqlClientPlugin(GObject.Object, Gedit.WindowActivatable):
 
     def __init__(self):
         GObject.Object.__init__(self)
-        self.gsc = GSqlClient()
+        self.gsc = GSqlClient(self.window)
 
     def do_activate(self):
         """
@@ -52,7 +52,6 @@ class GSqlClientPlugin(GObject.Object, Gedit.WindowActivatable):
 
         views = self.window.get_views()
         for view in views:
-            print view
             self._connect_view(view)
 
     def do_deactivate(self):
@@ -120,7 +119,8 @@ class GSqlClientPlugin(GObject.Object, Gedit.WindowActivatable):
 
 class GSqlClient():
     
-    def __init__(self):
+    def __init__(self, window):
+        self.window = window
         self.dbpool = db.DbPool()
         self.qparser = db.QueryParser()
 
