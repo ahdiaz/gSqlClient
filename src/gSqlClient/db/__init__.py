@@ -21,11 +21,15 @@
 import time
 import hashlib
 
+import gettext
+from gettext import gettext as _
+gettext.textdomain('gsqlclient')
+
 __DB_NONE__ = _("(None)")
-__DB_MYSQL__ = _("MySQL")
-__DB_POSTGRE__ = _("PostgreSQL")
-__DB_SQLITE__ = _("SQLite")
-__DB_SQLSERVER__ = _("SQLServer")
+__DB_MYSQL__ = "MySQL"
+__DB_POSTGRE__ = "PostgreSQL"
+__DB_SQLITE__ = "SQLite"
+__DB_SQLSERVER__ = "SQLServer"
 
 __DEFAULT_PORT_MYSQL__ = 3306
 __DEFAULT_PORT_POSTGRE__ = 5432

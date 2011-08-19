@@ -21,9 +21,14 @@
 import os
 from gi.repository import GObject, Gtk, Gdk, Gedit
 
+import utils
 import db
 import panels
 import dialogs
+
+import gettext
+from gettext import gettext as _
+gettext.bindtextdomain('gsqlclient', utils.get_locale_path())
 
 
 __gladeFile__ = os.path.join(os.path.dirname(__file__), 'gsqlclient.glade')
