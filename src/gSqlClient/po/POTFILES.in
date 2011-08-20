@@ -1,3 +1,4 @@
+./__dialogs.py
 ./gscstore.py
 ./panels/resultsetPanelTreeview.py
 ./panels/resultsetPanelContextmenu.py
@@ -10,12 +11,11 @@
 ./db/postgre.py
 ./__init__.py
 ./panels.py
-./dialogs.py
 ./exporter.py
-./dialogs/scriptErrorDialog.py
-./dialogs/fileExistsDialog.py
-./dialogs/connectionErrorDialog.py
-./dialogs/connectionDialog.py
+./dialogs/ConnectionDialog.py
+./dialogs/ScriptErrorDialog.py
+./dialogs/FileExistsDialog.py
+./dialogs/ConnectionErrorDialog.py
 ./dialogs/__init__.py
 ./dialogs/connectionDialog_OLD.py
 ./utils.py

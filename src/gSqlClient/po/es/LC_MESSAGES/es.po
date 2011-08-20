@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gsqlclient 1.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2011-08-19 21:37+0200\n"
+"POT-Creation-Date: 2011-08-20 11:48+0200\n"
 "PO-Revision-Date: 2011-08-19 21:38+0200\n"
 "Last-Translator: AHernandez <ahdiaz@gmail.com>\n"
 "Language-Team: Spanish\n"
@@ -47,45 +47,29 @@ msgstr "Exportar como CSV"
 msgid "%s rows fetched in %s"
 msgstr "%s filas obtenidas en %s"
 
-#: db/__init__.py:24
+#: db/__init__.py:28
 msgid "(None)"
 msgstr "(Ninguno)"
 
-#: db/__init__.py:25
-msgid "MySQL"
-msgstr "MySQL"
-
-#: db/__init__.py:26
-msgid "PostgreSQL"
-msgstr "PostgreSQL"
-
-#: db/__init__.py:27
-msgid "SQLite"
-msgstr "SQLite"
-
-#: db/__init__.py:28
-msgid "SQLServer"
-msgstr "SQLServer"
-
-#: db/__init__.py:94 db/__init__.py:98
+#: db/__init__.py:98 db/__init__.py:102
 msgid "The driver cannot be empty."
 msgstr "El driver no puede estar vacío."
 
-#: db/__init__.py:256 db/__init__.py:259
+#: db/__init__.py:263 db/__init__.py:266
 msgid "This connector is used only from the treeview."
 msgstr "Este conector es usado solo desde el árbol."
 
-#: db/__init__.py:369
+#: db/__init__.py:376
 #, python-format
 msgid "Connector \"%s\" is not valid."
 msgstr "El conector \"%s\" no es válido."
 
-#: __init__.py:238
+#: __init__.py:245
 #, python-format
 msgid "%s rows affected in %s"
 msgstr "%s filas afectadas en %s"
 
-#: __init__.py:290
+#: __init__.py:297
 #, python-format
 msgid ""
 "\n"
@@ -94,7 +78,7 @@ msgstr ""
 "\n"
 "(%s) - %s filas obtenidas en %s"
 
-#: __init__.py:293
+#: __init__.py:300
 #, python-format
 msgid ""
 "\n"
@@ -103,50 +87,102 @@ msgstr ""
 "\n"
 "(%s) - %s filas afectadas en %s"
 
-#: dialogs/scriptErrorDialog.py:5
-msgid "Script error"
-msgstr "Error en el script"
+#: dialogs/ConnectionDialog.py:72 dialogs/ConnectionDialog.py:144
+msgid "Connections"
+msgstr "Conexiones"
 
-#: dialogs/scriptErrorDialog.py:6
-msgid "Ignore"
-msgstr "Ignorar"
+#: dialogs/ConnectionDialog.py:74
+msgid "Driver"
+msgstr "Driver"
 
-#: dialogs/scriptErrorDialog.py:7
-msgid "Ignore all"
-msgstr "Ignorar todo"
+#: dialogs/ConnectionDialog.py:75
+msgid "Host"
+msgstr "Host"
 
-#: dialogs/scriptErrorDialog.py:8
-msgid "Stop script"
-msgstr "Detener script"
+#: dialogs/ConnectionDialog.py:76
+msgid "Port"
+msgstr "Puerto"
 
-#: dialogs/fileExistsDialog.py:5
-msgid "File exists"
-msgstr "El fichero existe"
+#: dialogs/ConnectionDialog.py:77
+msgid "Socket"
+msgstr "Socket"
 
-#: dialogs/fileExistsDialog.py:6
-msgid "Yes"
-msgstr "Sí"
+#: dialogs/ConnectionDialog.py:78
+msgid "User"
+msgstr "Usuario"
 
-#: dialogs/fileExistsDialog.py:7
-msgid "Cancel"
-msgstr "Cancelar"
+#: dialogs/ConnectionDialog.py:79
+msgid "Password"
+msgstr "Contraseña"
 
-#: dialogs/connectionErrorDialog.py:5
-msgid "Connection error"
-msgstr "Error de conexión"
+#: dialogs/ConnectionDialog.py:80
+msgid "Schema"
+msgstr "Esquema"
 
-#: dialogs/connectionErrorDialog.py:6
+#: dialogs/ConnectionDialog.py:82
+msgid "Add"
+msgstr "Añadir"
+
+#: dialogs/ConnectionDialog.py:83
+msgid "Remove"
+msgstr "Eliminar"
+
+#: dialogs/ConnectionDialog.py:84
+msgid "Save"
+msgstr "Guardar"
+
+#: dialogs/ConnectionDialog.py:85
+msgid "Connect"
+msgstr "Conectar"
+
+#: dialogs/ConnectionDialog.py:86
+msgid "Disconnect"
+msgstr "Desconectar"
+
+#: dialogs/ConnectionDialog.py:87 dialogs/ConnectionErrorDialog.py:6
 msgid "Close"
 msgstr "Cerrar"
 
-#: dialogs/connectionDialog.py:164
+#: dialogs/ConnectionDialog.py:188
 msgid "Stored"
 msgstr "Guardadas"
 
-#: dialogs/connectionDialog.py:172
+#: dialogs/ConnectionDialog.py:196
 msgid "Opened"
 msgstr "Abiertas"
 
-#: dialogs/connectionDialog.py:175
+#: dialogs/ConnectionDialog.py:199
 msgid "(Open new connection)"
 msgstr "(Abrir nueva conexión)"
+
+#: dialogs/ScriptErrorDialog.py:5
+msgid "Script error"
+msgstr "Error en el script"
+
+#: dialogs/ScriptErrorDialog.py:6
+msgid "Ignore"
+msgstr "Ignorar"
+
+#: dialogs/ScriptErrorDialog.py:7
+msgid "Ignore all"
+msgstr "Ignorar todo"
+
+#: dialogs/ScriptErrorDialog.py:8
+msgid "Stop script"
+msgstr "Detener script"
+
+#: dialogs/FileExistsDialog.py:5
+msgid "File exists"
+msgstr "El fichero existe"
+
+#: dialogs/FileExistsDialog.py:6
+msgid "Yes"
+msgstr "Sí"
+
+#: dialogs/FileExistsDialog.py:7
+msgid "Cancel"
+msgstr "Cancelar"
+
+#: dialogs/ConnectionErrorDialog.py:5
+msgid "Connection error"
+msgstr "Error de conexión"

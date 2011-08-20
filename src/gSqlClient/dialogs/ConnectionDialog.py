@@ -40,7 +40,8 @@ class ConnectionDialog:
         self.builder.add_from_file(utils.get_ui_file('ConnectionDialog'))
         self.builder.connect_signals(self)
         self.dialog = self.builder.get_object('ConnectionDialog')
-                
+        
+        self.lblDriver = self.builder.get_object("lblDriver")
         self.cmbDriver = self.builder.get_object("cmbDriver")
         self.lblHost = self.builder.get_object("lblHost")
         self.txtHost = self.builder.get_object("txtHost")
@@ -61,12 +62,16 @@ class ConnectionDialog:
         self.btnSave = self.builder.get_object("btnSave")
         self.btnConnect = self.builder.get_object("btnConnect")
         self.btnDisconnect = self.builder.get_object("btnDisconnect")
+        self.btnClose = self.builder.get_object("btnClose")
         
         self.load_drivers()
         self.init_treeview()
         self.translate()
     
     def translate(self):
+        self.dialog.set_title(_('Connections'))
+        
+        self.lblDriver.set_text(_('Driver'))
         self.lblHost.set_text(_('Host'))
         self.lblPort.set_text(_('Port'))
         self.lblSocket.set_text(_('Socket'))
@@ -79,6 +84,7 @@ class ConnectionDialog:
         self.btnSave.set_label(_('Save'))
         self.btnConnect.set_label(_('Connect'))
         self.btnDisconnect.set_label(_('Disconnect'))
+        self.btnClose.set_label(_('Close'))
     
     def run(self, active_connection):
         
