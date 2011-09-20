@@ -9,9 +9,9 @@ Requirements
 
 You will need to install only the drivers you want to use:
 
-	* MySQL:		MySQLdb, http://mysql-python.sourceforge.net/MySQLdb.html
+	* MySQL:	MySQLdb, http://mysql-python.sourceforge.net/MySQLdb.html
 	* PostgreSQL:	Psycopg, http://www.initd.org/psycopg/
-	* SQLite:		pysqlite, http://code.google.com/p/pysqlite/
+	* SQLite:	pysqlite, http://code.google.com/p/pysqlite/
 	* SQLServer:	Pymssql, http://code.google.com/p/pymssql/
 
 It is possible that your Linux distribution has precompiled packages available.
