@@ -41,13 +41,16 @@ class GSqlClientPlugin(GObject.Object, Gedit.WindowActivatable):
 
     def __init__(self):
         GObject.Object.__init__(self)
-        self.gsc = GSqlClient(self.window)
 
     def do_activate(self):
         """
         Connect the needed signals for the window
         and connect the current views.
+        Also instantiate a GSqlClient class, in the __init__
+        method self.window is not defined.
         """
+
+        self.gsc = GSqlClient(self.window)
 
         handler_id_1 = self.window.connect("tab-added", self._on_tab_added)
         handler_id_2 = self.window.connect("tab-removed", self._on_tab_removed)
