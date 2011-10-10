@@ -19,44 +19,48 @@
 #
 
 import os
-from gi.repository import GObject, Gtk
+from gi.repository import GObject, Gtk, GdkPixbuf
 
+from .. import utils
 from .. import exporter
 from .. import dialogs
+from .. panels.ResultsetTreeviewPanel import ResultsetTreeviewPanel
+
 
 class ResultsetPanel(Gtk.HBox):
 
-    def __init__(self, gladeFile, panel):
+    def __init__(self, panel):
 
         GObject.GObject.__init__(self)
         self._panel = panel
 
         image = Gtk.Image()
-        pxb = GdkPixbuf.Pixbuf.new_from_file(os.path.join(os.path.dirname(__file__), 'pixmaps/db.png'))
+        pxb = GdkPixbuf.Pixbuf.new_from_file(utils.get_media_file('db.png'))
         pxb = pxb.scale_simple(16, 16, GdkPixbuf.InterpType.BILINEAR)
         image.set_from_pixbuf(pxb)
-        panel.add_item(self, 'Resultset', image)
+        panel.add_item(self, 'foo', 'Resultset', image)
 
-        xmltree = Gtk.glade.XML(gladeFile)
+        self.builder = Gtk.Builder()
+        self.builder.add_from_file(utils.get_ui_file('ResultsetPanel'))
+        self.builder.connect_signals(self)
+        self.dialog = self.builder.get_object('ResultsetPanel')
 
-#        hbox = xmltree.get_widget("hboxContainer")
-
-        vbox1 = xmltree.get_widget("resultset-vbox1")
+        vbox1 = self.builder.get_object("resultset-vbox1")
         vbox1.reparent(self)
 
-        self.rset_panel = xmltree.get_widget("resultset-vbox3")
+        self.rset_panel = self.builder.get_object("resultset-vbox3")
         self.rset_panel.hide()
-        self.info_panel = xmltree.get_widget("resultset-sw2")
+        self.info_panel = self.builder.get_object("resultset-sw2")
         self.info_panel.hide()
 
-        self.treeview = xmltree.get_widget("treeviewResultset")
-        self.text_info = xmltree.get_widget("textviewQueryInfo")
-        self.text_error = xmltree.get_widget("textviewErrorInfo")
+        self.treeview = self.builder.get_object("treeviewResultset")
+        self.text_info = self.builder.get_object("textviewQueryInfo")
+        self.text_error = self.builder.get_object("textviewErrorInfo")
 
-        sw = xmltree.get_widget("resultset-sw1")
+        sw = self.builder.get_object("resultset-sw1")
         sw.remove(self.treeview)
         self.treeview.destroy()
-        self.treeview = ResultsetTreeView()
+        self.treeview = ResultsetTreeviewPanel()
         sw.add(self.treeview)
 
     def activate(self):

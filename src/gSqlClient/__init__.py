@@ -203,13 +203,13 @@ class GSqlClient():
                 self.dbpool.append(dbc)
 
                 panel = self.window.get_bottom_panel()
-                rset = panels.ResultsetPanel(__gladeFile__, panel)
+                rset = panels.ResultsetPanel(panel)
 
                 view.set_data('dbc', dbc)
                 view.set_data('resultset_panel', rset)
 
-            except Exception, e:
-                error_dialog = dialogs.ConnectionErrorDialog("\n  %s  \n" % (str(e)), self.window)
+            except db.ConnectorError as e:
+                error_dialog = dialogs.ConnectionErrorDialog("\n  %s: %s  \n" % (type(e), str(e)), self.window)
                 error_dialog.run()
                 error_dialog.destroy()
 
