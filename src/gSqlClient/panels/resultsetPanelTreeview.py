@@ -2,8 +2,8 @@
 class ResultsetTreeView(Gtk.TreeView):
 
     def __init__(self):
-        gtk.TreeView.__init__(self)
-        self.set_grid_lines(gtk.TREE_VIEW_GRID_LINES_HORIZONTAL)
+        GObject.GObject.__init__(self)
+        self.set_grid_lines(Gtk.TREE_VIEW_GRID_LINES_HORIZONTAL)
         self.connect("button_press_event", self._on_treeview_clicked)
         self._contextmenu = None
         self._exporter = exporter.Exporter()
@@ -33,16 +33,16 @@ class ResultsetTreeView(Gtk.TreeView):
             column_name = d[0].replace("_", "__")
             column_types.append(str)
 
-            cell = gtk.CellRendererText()
+            cell = Gtk.CellRendererText()
             cell.set_property("xpad", 3)
-            tvcolumn[n] = gtk.TreeViewColumn(column_name, cell, text=n + 1)
+            tvcolumn[n] = Gtk.TreeViewColumn(column_name, cell, text=n + 1)
             tvcolumn[n].set_resizable(True)
             tvcolumn[n].set_data('column_id', n)
             tvcolumn[n].set_cell_data_func(cell, self._cell_value)
             self.append_column(tvcolumn[n])
 
         column_types = tuple(column_types)
-        new_model = gtk.ListStore(*column_types)
+        new_model = Gtk.ListStore(*column_types)
 
         while (1):
             row = cursor.fetchone()
@@ -96,7 +96,7 @@ class ResultsetTreeView(Gtk.TreeView):
         value = self._get_cell_value(self, path, column)
         if value is None:
             value = "NULL"
-        clipboard = gtk.clipboard_get(gtk.gdk.SELECTION_CLIPBOARD)
+        clipboard = Gtk.clipboard_get(Gdk.SELECTION_CLIPBOARD)
         clipboard.set_text(value)
         return value
 
@@ -113,7 +113,7 @@ class ResultsetTreeView(Gtk.TreeView):
             row.append(value)
 
         value = '"%s"' % (str.join('"\t"', row).strip(" \t\r\n"))
-        clipboard = gtk.clipboard_get(gtk.gdk.SELECTION_CLIPBOARD)
+        clipboard = Gtk.clipboard_get(Gdk.SELECTION_CLIPBOARD)
         clipboard.set_text(value)
         return value
 
@@ -124,9 +124,9 @@ class ResultsetTreeView(Gtk.TreeView):
         for c in range(0, len(_columns)):
             columns.append(_columns[c].get_title())
 
-        chooser = gtk.FileChooserDialog(
-            title=None, action=gtk.FILE_CHOOSER_ACTION_SAVE,
-            buttons=(gtk.STOCK_CANCEL, gtk.RESPONSE_CANCEL, gtk.STOCK_OPEN, gtk.RESPONSE_OK)
+        chooser = Gtk.FileChooserDialog(
+            title=None, action=Gtk.FileChooserAction.SAVE,
+            buttons=(Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL, Gtk.STOCK_OPEN, Gtk.ResponseType.OK)
         )
         chooser.run()
         filename = chooser.get_filename()

@@ -151,7 +151,7 @@ class GSqlClient():
     def on_key_press_event(self, view, event):
         """ Manage key events actions. """
         
-        if not (event.state & Gdk.ModifierType.CONTROL_MASK):
+        if not (event.get_state() & Gdk.ModifierType.CONTROL_MASK):
             return False
 
         # CTRL + Return
@@ -160,7 +160,7 @@ class GSqlClient():
             self._execute_query(view)
             return True
 
-        if  not (event.state & Gdk.ModifierType.SHIFT_MASK):
+        if  not (event.get_state() & Gdk.ModifierType.SHIFT_MASK):
             return False
 
         # CTRL + SHIFT + C
@@ -256,7 +256,7 @@ class GSqlClient():
     def _execute_script(self, view):
         """ Run document as script """
 
-        xmltree = gtk.glade.XML(__gladeFile__)
+        xmltree = Gtk.glade.XML(__gladeFile__)
         script_dialog = xmltree.get_widget('scriptDialog')
         script_dialog.set_transient_for(self.window)
         dialog_ret = script_dialog.run()

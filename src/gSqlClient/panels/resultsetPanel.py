@@ -28,16 +28,16 @@ class ResultsetPanel(Gtk.HBox):
 
     def __init__(self, gladeFile, panel):
 
-        gtk.HBox.__init__(self)
+        GObject.GObject.__init__(self)
         self._panel = panel
 
-        image = gtk.Image()
-        pxb = gtk.gdk.pixbuf_new_from_file(os.path.join(os.path.dirname(__file__), 'pixmaps/db.png'))
-        pxb = pxb.scale_simple(16, 16, gtk.gdk.INTERP_BILINEAR)
+        image = Gtk.Image()
+        pxb = GdkPixbuf.Pixbuf.new_from_file(os.path.join(os.path.dirname(__file__), 'pixmaps/db.png'))
+        pxb = pxb.scale_simple(16, 16, GdkPixbuf.InterpType.BILINEAR)
         image.set_from_pixbuf(pxb)
         panel.add_item(self, 'Resultset', image)
 
-        xmltree = gtk.glade.XML(gladeFile)
+        xmltree = Gtk.glade.XML(gladeFile)
 
 #        hbox = xmltree.get_widget("hboxContainer")
 

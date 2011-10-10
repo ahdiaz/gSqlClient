@@ -3,13 +3,13 @@ class ResultsetContextmenu(Gtk.Menu):
 
     def __init__(self, treeview, path, column):
 
-        gtk.Menu.__init__(self)
+        GObject.GObject.__init__(self)
 
-        copy_cell_item = gtk.MenuItem(_("Copy cell value"))
-        copy_row_item = gtk.MenuItem(_("Copy row value"))
-        export_sql = gtk.MenuItem(_("Export as SQL"))
-        export_xml = gtk.MenuItem(_("Export as XML"))
-        export_csv = gtk.MenuItem(_("Export as CSV"))
+        copy_cell_item = Gtk.MenuItem(_("Copy cell value"))
+        copy_row_item = Gtk.MenuItem(_("Copy row value"))
+        export_sql = Gtk.MenuItem(_("Export as SQL"))
+        export_xml = Gtk.MenuItem(_("Export as XML"))
+        export_csv = Gtk.MenuItem(_("Export as CSV"))
 
         self.append(copy_cell_item)
         self.append(copy_row_item)
@@ -26,4 +26,4 @@ class ResultsetContextmenu(Gtk.Menu):
         self.show_all()
 
     def popup(self, event):
-        gtk.Menu.popup(self, None, None, None, event.button, event.time)
+        Gtk.Menu.popup(self, None, None, None, event.button, event.time)

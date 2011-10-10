@@ -22,7 +22,7 @@ class ConnectionDialog_old():
 
     def __init__(self, gladeFile, window, dbpool):
 
-        self.xmltree = gtk.glade.XML(gladeFile, 'connectionDialog')
+        self.xmltree = Gtk.glade.XML(gladeFile, 'connectionDialog')
         self.window = window
         self.dbpool = dbpool
 

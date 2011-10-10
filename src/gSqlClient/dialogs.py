@@ -32,7 +32,7 @@ class ConnectionDialog:
         self.dbpool = dbpool
         self.selected = None
         
-        xmltree = gtk.glade.XML(glade_file, "connectionDialog_2")
+        xmltree = Gtk.glade.XML(glade_file, "connectionDialog_2")
         xmltree.signal_autoconnect(self)
         
         self.dialog = xmltree.get_widget("connectionDialog_2")
@@ -114,10 +114,10 @@ class ConnectionDialog:
     def init_treeview(self):
         
         # create a CellRendererText to render the data
-        cell = gtk.CellRendererText()
+        cell = Gtk.CellRendererText()
         
         # create the TreeViewColumn to display the data
-        tvcolumn = gtk.TreeViewColumn('Connections')
+        tvcolumn = Gtk.TreeViewColumn('Connections')
         
         # add the cell to the tvcolumn and allow it to expand
         tvcolumn.pack_start(cell, True)
@@ -142,7 +142,7 @@ class ConnectionDialog:
         self.treeview.set_reorderable(True)
         
         # create a TreeStore with one string column to use as the model
-        treestore = gtk.TreeStore(object)
+        treestore = Gtk.TreeStore(object)
         
         # update the model
         self.treeview.set_model(treestore)
@@ -479,7 +479,7 @@ class ConnectionDialog_old():
 
     def __init__(self, gladeFile, window, dbpool):
 
-        self.xmltree = gtk.glade.XML(gladeFile, 'connectionDialog')
+        self.xmltree = Gtk.glade.XML(gladeFile, 'connectionDialog')
         self.window = window
         self.dbpool = dbpool
 
@@ -743,29 +743,29 @@ class ConnectionDialog_old():
 class ConnectionErrorDialog(Gtk.Dialog):
 
     def __init__(self, message, parent=None):
-        gtk.Dialog.__init__(self, title="Connection error", parent=parent, flags=gtk.DIALOG_MODAL, buttons=None)
-        self.add_button("Close", gtk.RESPONSE_CLOSE)
-        label = gtk.Label(message)
+        GObject.GObject.__init__(self, title="Connection error", parent=parent, flags=Gtk.DialogFlags.MODAL, buttons=None)
+        self.add_button("Close", Gtk.ResponseType.CLOSE)
+        label = Gtk.Label(label=message)
         self.vbox.pack_start(label, True, True, 0)
         label.show()
 
 class ScriptErrorDialog(Gtk.Dialog):
 
     def __init__(self, message, parent=None):
-        gtk.Dialog.__init__(self, title="Script error", parent=parent, flags=gtk.DIALOG_MODAL, buttons=None)
+        GObject.GObject.__init__(self, title="Script error", parent=parent, flags=Gtk.DialogFlags.MODAL, buttons=None)
         self.add_button("Ignore", 2)
         self.add_button("Ignore all", 1)
         self.add_button("Stop script", 0)
-        label = gtk.Label(message)
+        label = Gtk.Label(label=message)
         self.vbox.pack_start(label, True, True, 0)
         label.show()
 
 class FileExistsDialog(Gtk.Dialog):
 
     def __init__(self, message, parent=None):
-        gtk.Dialog.__init__(self, title="File exists", parent=parent, flags=gtk.DIALOG_MODAL, buttons=None)
+        GObject.GObject.__init__(self, title="File exists", parent=parent, flags=Gtk.DialogFlags.MODAL, buttons=None)
         self.add_button("Yes", 1)
         self.add_button("Cancel", 0)
-        label = gtk.Label(message)
+        label = Gtk.Label(label=message)
         self.vbox.pack_start(label, True, True, 0)
         label.show()
