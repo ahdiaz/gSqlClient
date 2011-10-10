@@ -20,6 +20,8 @@
 
 from gi.repository import GObject, Gtk
 
+from .. import exporter
+
 import gettext
 from gettext import gettext as _
 gettext.textdomain('gsqlclient')
@@ -29,7 +31,7 @@ class ResultsetTreeviewPanel(Gtk.TreeView):
 
     def __init__(self):
         GObject.GObject.__init__(self)
-        self.set_grid_lines(Gtk.TREE_VIEW_GRID_LINES_HORIZONTAL)
+        self.set_grid_lines(Gtk.TreeViewGridLines.HORIZONTAL)
         self.connect("button_press_event", self._on_treeview_clicked)
         self._contextmenu = None
         self._exporter = exporter.Exporter()
