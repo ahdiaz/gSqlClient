@@ -1,5 +1,5 @@
 
-class ResultsetContextmenu(Gtk.Menu):
+class ResultsetContextmenuPanel(Gtk.Menu):
 
     def __init__(self, treeview, path, column):
 

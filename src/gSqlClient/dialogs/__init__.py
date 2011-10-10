@@ -18,4 +18,8 @@
 # $Id: __init__.py 62 2011-08-18 23:53:03Z ahdiaz $
 #
 
-#__all__ = ['ConnectionDialog', 'ConnectionErrorDialog']
+
+from .. dialogs.ConnectionDialog import ConnectionDialog
+from .. dialogs.ConnectionErrorDialog import ConnectionErrorDialog
+from .. dialogs.FileExistsDialog import FileExistsDialog
+from .. dialogs.ScriptErrorDialog import ScriptErrorDialog

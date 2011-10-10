@@ -1,5 +1,5 @@
 
-class ResultsetTreeView(Gtk.TreeView):
+class ResultsetTreeviewPanel(Gtk.TreeView):
 
     def __init__(self):
         GObject.GObject.__init__(self)
@@ -144,7 +144,7 @@ class ResultsetTreeView(Gtk.TreeView):
                 return None
 
         exported = self._exporter.export(format, self.get_model(), columns)
-        
+
         if exported == None:
             return None
 

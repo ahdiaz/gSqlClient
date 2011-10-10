@@ -24,7 +24,8 @@ from gi.repository import GObject, Gtk, Gdk, Gedit
 import utils
 import db
 import panels
-from dialogs import ConnectionDialog
+#from dialogs import ConnectionDialog
+import dialogs
 
 import gettext
 from gettext import gettext as _
@@ -34,7 +35,7 @@ gettext.bindtextdomain('gsqlclient', utils.get_locale_path())
 __gladeFile__ = os.path.join(os.path.dirname(__file__), 'gsqlclient.glade')
 
 class GSqlClientPlugin(GObject.Object, Gedit.WindowActivatable):
-    
+
     __gtype_name__ = "GSqlClientPlugin"
 
     window = GObject.property(type=Gedit.Window)
@@ -52,7 +53,7 @@ class GSqlClientPlugin(GObject.Object, Gedit.WindowActivatable):
         handler_id_1 = self.window.connect("tab-added", self._on_tab_added)
         handler_id_2 = self.window.connect("tab-removed", self._on_tab_removed)
         handler_id_3 = self.window.connect("active-tab-changed", self._on_active_tab_changed)
-        
+
         self.window.set_data(self.__gtype_name__, (handler_id_1, handler_id_2, handler_id_3))
 
         views = self.window.get_views()
@@ -61,10 +62,10 @@ class GSqlClientPlugin(GObject.Object, Gedit.WindowActivatable):
 
     def do_deactivate(self):
         """ Disconnect the window signals and current views. """
-        
+
         for handler_id in self.window.get_data(self.__gtype_name__):
             self.window.disconnect(handler_id)
-        
+
         self.window.set_data(self.__gtype_name__, None)
 
         views = self.window.get_views()
@@ -73,57 +74,57 @@ class GSqlClientPlugin(GObject.Object, Gedit.WindowActivatable):
 
     def do_update_state(self):
         pass
-    
+
     def _on_tab_added(self, window, tab, data=None):
         """ Connect the new view. """
-        
+
         view = tab.get_view()
         self._connect_view(view)
-        
+
         self.gsc.on_tab_added(window, tab, data)
-    
+
     def _on_tab_removed(self, window, tab, data=None):
         """ Disconnect the view. """
-        
+
         view = tab.get_view()
         self._disconnect_view(view)
-        
+
         self.gsc.on_tab_removed(window, tab, data)
-    
+
     def _on_active_tab_changed(self, window, tab, data=None):
-        
+
         self.gsc.on_active_tab_changed(window, tab, data)
-    
+
     def _connect_view(self, view):
         """ Connect the needed view signals. """
-        
+
         handler_id = view.get_data(self.__gtype_name__)
-        
+
         if handler_id is None:
             handler_id = view.connect("key-press-event", self._on_key_press_event)
             view.set_data(self.__gtype_name__, (handler_id))
-        
+
         self.gsc.on_connect_view(view)
-    
+
     def _disconnect_view(self, view):
         """ Disconnect the view signals. """
-        
+
         handler_id = view.get_data(self.__gtype_name__)
-        
+
         if handler_id is not None:
             view.disconnect(handler_id)
             view.set_data(self.__gtype_name__, None)
-        
+
         self.gsc.on_disconnect_view(view)
-    
+
     def _on_key_press_event(self, view, event):
         """ Fired when we press any key on a view. """
-        
+
         self.gsc.on_key_press_event(view, event)
-    
+
 
 class GSqlClient():
-    
+
     def __init__(self, window):
         self.window = window
         self.dbpool = db.DbPool()
@@ -143,14 +144,14 @@ class GSqlClient():
 
     def on_connect_view(self, view):
         pass
-        
+
     def on_disconnect_view(self, view):
 
-        self._db_disconnect(view)        
+        self._db_disconnect(view)
 
     def on_key_press_event(self, view, event):
         """ Manage key events actions. """
-        
+
         if not (event.get_state() & Gdk.ModifierType.CONTROL_MASK):
             return False
 
@@ -181,14 +182,15 @@ class GSqlClient():
 
         dbc = view.get_data('dbc')
 
-        d = ConnectionDialog.ConnectionDialog(self.dbpool)
+        #d = ConnectionDialog.ConnectionDialog(self.dbpool)
+        d = dialogs.ConnectionDialog(self.dbpool)
         d.dialog.set_transient_for(self.window)
-        
+
         result, new_dbc = d.run(dbc)
 
         if result == 2:
             self._db_disconnect(view)
-            
+
         elif result == 1:
 
             self._db_disconnect(view)
@@ -235,15 +237,15 @@ class GSqlClient():
             try:
                 dbc = view.get_data('dbc')
                 ret = dbc.execute(query)
-            
+
 #                print ret
-                
+
                 if ret["selection"]:
                     sw.show_resultset(ret["cursor"], ret["execution_time"])
-                    
+
                 else:
                     sw.show_information(_("%s rows affected in %s") % (ret["rowcount"], ret["execution_time"]))
-    
+
                 if ret["cursor"] is not None:
                     ret["cursor"].close()
 
@@ -252,7 +254,7 @@ class GSqlClient():
 
             except Exception, e:
                 pass
-            
+
     def _execute_script(self, view):
         """ Run document as script """
 
@@ -266,7 +268,7 @@ class GSqlClient():
         rbIgnore = xmltree.get_widget('radiobuttonIgnore').get_active()
 
         script_dialog.destroy()
-        
+
         if dialog_ret == 0:
             return
 
@@ -278,7 +280,7 @@ class GSqlClient():
         buff = view.get_buffer()
         self.qparser.set_buffer(buff)
         queries = self.qparser.get_all_queries()
-        
+
         dbc = view.get_data('dbc')
 
         n = 1
@@ -289,13 +291,13 @@ class GSqlClient():
 
             try:
                 ret = dbc.execute(query)
-    
+
                 if ret["cursor"] is not None:
                     ret["cursor"].close()
-        
+
                 if ret["selection"]:
                     sw.append_information(_("\n(%s) - %s rows fetched in %s") % (n, ret["rowcount"], ret["execution_time"]))
-                    
+
                 else:
                     sw.append_information(_("\n(%s) - %s rows affected in %s") % (n, ret["rowcount"], ret["execution_time"]))
 
@@ -311,7 +313,7 @@ class GSqlClient():
                     if error_dialog_ret == 1:
                         rbAsk = False
                         rbIgnore = True
-                        
+
                     elif error_dialog_ret == 0:
                         rbStop = True
 
@@ -320,7 +322,7 @@ class GSqlClient():
 
             except Exception, e:
                 pass
-            
+
             n = n + 1
 
     def _destroy_resultset_view(self, view):
@@ -330,4 +332,4 @@ class GSqlClient():
         sw.destroy()
         view.set_data('resultset_panel', None)
 
-    
+

@@ -17,3 +17,7 @@
 #
 # $Id: __init__.py 62 2011-08-18 23:53:03Z ahdiaz $
 #
+
+from .. panels.ResultsetPanel import ResultsetPanel
+from .. panels.ResultsetContextmenuPanel import ResultsetContextmenuPanel
+from .. panels.ResultsetTreeviewPanel import ResultsetTreeviewPanel
