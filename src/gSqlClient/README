@@ -19,7 +19,8 @@ It is possible that your Linux distribution has precompiled packages available.
 Installation
 ------------
 
-   1. Extract the content of the tarball under $HOME/.gnome2/gedit/plugins/ directory.
+   1. Extract the content of the tarball under ~/.local/share/gedit/plugins/ directory.
+      or /usr/lib/gedit/plugins/ if you want a system wide install.
    2. (Re)start Gedit.
    3. Go to Edit->Preferences->Plugins and check the box for gSqlClient.
 
