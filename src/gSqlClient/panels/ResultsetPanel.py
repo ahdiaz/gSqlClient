@@ -21,8 +21,8 @@
 import os
 from gi.repository import GObject, Gtk
 
-import exporter
-import dialogs
+from .. import exporter
+from .. import dialogs
 
 class ResultsetPanel(Gtk.HBox):
 
