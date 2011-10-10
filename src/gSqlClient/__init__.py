@@ -250,11 +250,11 @@ class GSqlClient():
                 if ret["cursor"] is not None:
                     ret["cursor"].close()
 
-            except db.ConnectorError, e:
+            except db.ConnectorError as e:
                 sw.show_information("%s" % (str(e)))
 
-            except Exception, e:
-                pass
+            #except Exception, e:
+            #    pass
 
     def _execute_script(self, view):
         """ Run document as script """
