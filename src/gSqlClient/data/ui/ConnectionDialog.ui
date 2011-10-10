@@ -168,6 +168,7 @@
                         <property name="can_focus">False</property>
                         <property name="model">model1</property>
                         <property name="active">0</property>
+                        <signal name="changed" handler="on_cmbDriver_changed" swapped="no"/>
                         <child>
                           <object class="GtkCellRendererText" id="renderer1"/>
                           <attributes>
@@ -216,6 +217,7 @@
                         <property name="invisible_char_set">True</property>
                         <property name="primary_icon_activatable">False</property>
                         <property name="secondary_icon_activatable">False</property>
+                        <signal name="changed" handler="on_txtHost_changed" swapped="no"/>
                       </object>
                       <packing>
                         <property name="expand">True</property>
@@ -245,6 +247,7 @@
                         <property name="secondary_icon_activatable">False</property>
                         <property name="adjustment">adjustment1</property>
                         <property name="numeric">True</property>
+                        <signal name="changed" handler="on_txtPort_changed" swapped="no"/>
                       </object>
                       <packing>
                         <property name="expand">True</property>
@@ -286,6 +289,7 @@
                         <property name="invisible_char_set">True</property>
                         <property name="primary_icon_activatable">False</property>
                         <property name="secondary_icon_activatable">False</property>
+                        <signal name="changed" handler="on_txtSocket_changed" swapped="no"/>
                       </object>
                       <packing>
                         <property name="expand">True</property>
@@ -327,6 +331,7 @@
                         <property name="invisible_char_set">True</property>
                         <property name="primary_icon_activatable">False</property>
                         <property name="secondary_icon_activatable">False</property>
+                        <signal name="changed" handler="on_txtUser_changed" swapped="no"/>
                       </object>
                       <packing>
                         <property name="expand">True</property>
@@ -369,6 +374,7 @@
                         <property name="invisible_char_set">True</property>
                         <property name="primary_icon_activatable">False</property>
                         <property name="secondary_icon_activatable">False</property>
+                        <signal name="changed" handler="on_txtPassword_changed" swapped="no"/>
                       </object>
                       <packing>
                         <property name="expand">True</property>
@@ -410,6 +416,7 @@
                         <property name="invisible_char_set">True</property>
                         <property name="primary_icon_activatable">False</property>
                         <property name="secondary_icon_activatable">False</property>
+                        <signal name="changed" handler="on_txtSchema_changed" swapped="no"/>
                       </object>
                       <packing>
                         <property name="expand">True</property>

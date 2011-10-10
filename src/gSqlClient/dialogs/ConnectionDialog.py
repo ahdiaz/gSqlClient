@@ -230,7 +230,7 @@ class ConnectionDialog:
 
         # Normalized options
         options = {
-            "driver": self.cmbDriver.get_active_text(),
+            "driver": self.combo_get_active_by_index(self.cmbDriver),
             "host": self.txtHost.get_text(),
             "port": self.txtPort.get_text(),
             "socket": self.txtSocket.get_text(),
