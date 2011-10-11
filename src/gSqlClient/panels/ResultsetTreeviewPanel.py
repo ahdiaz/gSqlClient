@@ -76,14 +76,18 @@ class ResultsetTreeviewPanel(Gtk.TreeView):
             row = cursor.fetchone()
             if row == None:
                 break
-            new_model.append(row)
+
+            # TODO: Other way to transform data into strings?
+            s_row = []
+            for value in row:
+                s_row.append(str(value))
+            new_model.append(s_row)
 
         self.set_model(new_model)
         self.set_reorderable(False)
         self.show_all()
 
-    def _cell_value(self, column, cell, model, iter):
-        #pos = column.cell_get_position(cell)
+    def _cell_value(self, column, cell, model, iter, user_param):
         cell.set_property('text', model.get_value(iter, column.get_data('column_id')))
 
     def _on_treeview_clicked(self, treeview, event):
@@ -91,7 +95,6 @@ class ResultsetTreeviewPanel(Gtk.TreeView):
         if event.button != 3:
             return
 
-        #columns = treeview.get_data("columns")
         column = treeview.get_path_at_pos(int(event.x), int(event.y))
 
         if column is None:
