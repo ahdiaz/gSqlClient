@@ -225,9 +225,11 @@ class GSqlClient():
     def _execute_query(self, view):
 
         sw = view.get_data('resultset_panel')
-        if sw is not None:
-            sw.clear_resultset()
-            sw.clear_information()
+        if sw is None:
+            return
+
+        sw.clear_resultset()
+        sw.clear_information()
 
         buff = view.get_buffer()
         self.qparser.set_buffer(buff)
@@ -239,7 +241,7 @@ class GSqlClient():
                 dbc = view.get_data('dbc')
                 ret = dbc.execute(query)
 
-#                print ret
+                #print ret
 
                 if ret["selection"]:
                     sw.show_resultset(ret["cursor"], ret["execution_time"])
@@ -274,9 +276,11 @@ class GSqlClient():
             return
 
         sw = view.get_data('resultset_panel')
-        if sw is not None:
-            sw.clear_resultset()
-            sw.clear_information()
+        if sw is None:
+            return
+
+        sw.clear_resultset()
+        sw.clear_information()
 
         buff = view.get_buffer()
         self.qparser.set_buffer(buff)
