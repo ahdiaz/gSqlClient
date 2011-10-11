@@ -20,6 +20,8 @@
 
 from gi.repository import GObject, Gtk
 
+from .. import exporter
+
 import gettext
 from gettext import gettext as _
 gettext.textdomain('gsqlclient')
@@ -52,4 +54,4 @@ class ResultsetContextmenuPanel(Gtk.Menu):
         self.show_all()
 
     def popup(self, event):
-        Gtk.Menu.popup(self, None, None, None, event.button, event.time)
+        Gtk.Menu.popup(self, None, None, None, None, event.button, event.time)

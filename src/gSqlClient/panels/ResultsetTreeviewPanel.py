@@ -21,6 +21,7 @@
 from gi.repository import GObject, Gtk
 
 from .. import exporter
+from .. panels.ResultsetContextmenuPanel import ResultsetContextmenuPanel
 
 import gettext
 from gettext import gettext as _
@@ -106,7 +107,7 @@ class ResultsetTreeviewPanel(Gtk.TreeView):
         if self._contextmenu is not None:
             self._contextmenu.destroy()
 
-        self._contextmenu = ResultsetContextmenu(treeview, path, column)
+        self._contextmenu = ResultsetContextmenuPanel(treeview, path, column)
         self._contextmenu.popup(event)
 
     def _get_cell_value(self, treeview, path, column):
