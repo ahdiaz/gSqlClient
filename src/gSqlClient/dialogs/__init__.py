@@ -22,4 +22,5 @@
 from .. dialogs.ConnectionDialog import ConnectionDialog
 from .. dialogs.ConnectionErrorDialog import ConnectionErrorDialog
 from .. dialogs.FileExistsDialog import FileExistsDialog
+from .. dialogs.ScriptDialog import ScriptDialog
 from .. dialogs.ScriptErrorDialog import ScriptErrorDialog

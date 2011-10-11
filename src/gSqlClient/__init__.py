@@ -262,16 +262,8 @@ class GSqlClient():
     def _execute_script(self, view):
         """ Run document as script """
 
-        xmltree = Gtk.glade.XML(__gladeFile__)
-        script_dialog = xmltree.get_widget('scriptDialog')
-        script_dialog.set_transient_for(self.window)
+        script_dialog = dialogs.ScriptDialog(self.window)
         dialog_ret = script_dialog.run()
-
-        rbStop = xmltree.get_widget('radiobuttonStop').get_active()
-        rbAsk = xmltree.get_widget('radiobuttonAsk').get_active()
-        rbIgnore = xmltree.get_widget('radiobuttonIgnore').get_active()
-
-        script_dialog.destroy()
 
         if dialog_ret == 0:
             return
@@ -312,19 +304,18 @@ class GSqlClient():
                 error_message = "\n(%s) - %s" % (n, str(e))
                 sw.append_information(error_message)
 
-                if rbAsk:
+                if dialog_ret == dialogs.ScriptDialog.OPT_ASK:
                     error_dialog = dialogs.ScriptErrorDialog(error_message, self.window)
                     error_dialog_ret = error_dialog.run()
                     error_dialog.destroy()
 
                     if error_dialog_ret == 1:
-                        rbAsk = False
-                        rbIgnore = True
+                        dialog_ret = dialogs.ScriptDialog.OPT_IGNORE
 
                     elif error_dialog_ret == 0:
-                        rbStop = True
+                        dialog_ret = dialogs.ScriptDialog.OPT_STOP
 
-                if rbStop:
+                if dialog_ret == dialogs.ScriptDialog.OPT_STOP:
                     break
 
             n = n + 1
