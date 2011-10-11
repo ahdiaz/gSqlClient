@@ -122,7 +122,7 @@ class GSqlClientPlugin(GObject.Object, Gedit.WindowActivatable):
     def _on_key_press_event(self, view, event):
         """ Fired when we press any key on a view. """
 
-        self.gsc.on_key_press_event(view, event)
+        return self.gsc.on_key_press_event(view, event)
 
 
 class GSqlClient():
