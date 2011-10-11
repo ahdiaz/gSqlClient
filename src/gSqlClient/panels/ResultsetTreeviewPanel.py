@@ -18,6 +18,7 @@
 # $Id: panels.py 62 2011-08-18 23:53:03Z ahdiaz $
 #
 
+import os
 from gi.repository import GObject, Gtk
 
 from .. import exporter
