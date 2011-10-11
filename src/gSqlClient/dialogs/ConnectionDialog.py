@@ -421,6 +421,8 @@ class ConnectionDialog:
             self.btnDisconnect.set_sensitive(False)
             self.update_form()
 
+            self.save_connections()
+
     def on_tvConnections_cursor_changed(self, treeview):
 
         treeselection = self.treeview.get_selection()
