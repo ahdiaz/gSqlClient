@@ -28,7 +28,7 @@ msgstr "Copiar el valor de la celda"
 
 #: panels/resultsetPanelContextmenu.py:9
 msgid "Copy row value"
-msgstr "Copiar el valor de la columna"
+msgstr "Copiar el valor de la fila"
 
 #: panels/resultsetPanelContextmenu.py:10
 msgid "Export as SQL"
