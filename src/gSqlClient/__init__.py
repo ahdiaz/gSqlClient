@@ -224,8 +224,10 @@ class GSqlClient():
 
     def _execute_query(self, view):
 
+        dbc = view.get_data('dbc')
         sw = view.get_data('resultset_panel')
-        if sw is None:
+
+        if dbc is None or not dbc.is_connected() or sw is None:
             return
 
         sw.clear_resultset()
@@ -238,7 +240,6 @@ class GSqlClient():
         if query is not None:
 
             try:
-                dbc = view.get_data('dbc')
                 ret = dbc.execute(query)
 
                 #print ret
@@ -275,8 +276,11 @@ class GSqlClient():
         if dialog_ret == 0:
             return
 
+
+        dbc = view.get_data('dbc')
         sw = view.get_data('resultset_panel')
-        if sw is None:
+
+        if dbc is None or not dbc.is_connected() or sw is None:
             return
 
         sw.clear_resultset()
@@ -285,8 +289,6 @@ class GSqlClient():
         buff = view.get_buffer()
         self.qparser.set_buffer(buff)
         queries = self.qparser.get_all_queries()
-
-        dbc = view.get_data('dbc')
 
         n = 1
         for query in queries:
@@ -324,9 +326,6 @@ class GSqlClient():
 
                 if rbStop:
                     break
-
-            except Exception, e:
-                pass
 
             n = n + 1
 
