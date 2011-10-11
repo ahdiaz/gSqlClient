@@ -19,7 +19,7 @@
 #
 
 import os
-from gi.repository import GObject, Gtk
+from gi.repository import GObject, Gtk, Gdk
 
 from .. import exporter
 from .. panels.ResultsetContextmenuPanel import ResultsetContextmenuPanel
@@ -129,8 +129,8 @@ class ResultsetTreeviewPanel(Gtk.TreeView):
         value = self._get_cell_value(self, path, column)
         if value is None:
             value = "NULL"
-        clipboard = Gtk.clipboard_get(Gdk.SELECTION_CLIPBOARD)
-        clipboard.set_text(value)
+        clipboard = Gtk.Clipboard.get(Gdk.SELECTION_CLIPBOARD)
+        clipboard.set_text(value, -1)
         return value
 
     def row_value_to_clipboard(self, menuitem, path):
@@ -146,8 +146,8 @@ class ResultsetTreeviewPanel(Gtk.TreeView):
             row.append(value)
 
         value = '"%s"' % (str.join('"\t"', row).strip(" \t\r\n"))
-        clipboard = Gtk.clipboard_get(Gdk.SELECTION_CLIPBOARD)
-        clipboard.set_text(value)
+        clipboard = Gtk.Clipboard.get(Gdk.SELECTION_CLIPBOARD)
+        clipboard.set_text(value, -1)
         return value
 
     def export_grid(self, widget, format):
