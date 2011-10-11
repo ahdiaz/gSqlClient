@@ -22,6 +22,7 @@ import os
 from gi.repository import GObject, Gtk, Gdk
 
 from .. import exporter
+from .. import dialogs
 from .. panels.ResultsetContextmenuPanel import ResultsetContextmenuPanel
 
 import gettext
