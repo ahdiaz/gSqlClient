@@ -18,6 +18,7 @@
                   <object class="GtkScrolledWindow" id="resultset-sw1">
                     <property name="visible">True</property>
                     <property name="can_focus">True</property>
+                    <property name="shadow_type">out</property>
                     <child>
                       <object class="GtkTreeView" id="treeviewResultset">
                         <property name="visible">True</property>
@@ -62,6 +63,7 @@
             <child>
               <object class="GtkScrolledWindow" id="resultset-sw2">
                 <property name="can_focus">True</property>
+                <property name="shadow_type">out</property>
                 <child>
                   <object class="GtkTextView" id="textviewErrorInfo">
                     <property name="visible">True</property>
@@ -82,6 +84,7 @@
           <packing>
             <property name="expand">True</property>
             <property name="fill">True</property>
+            <property name="padding">5</property>
             <property name="position">0</property>
           </packing>
         </child>
