@@ -246,16 +246,14 @@ class GSqlClient():
                     sw.show_resultset(ret["cursor"], ret["execution_time"])
 
                 else:
-                    sw.show_information(_("%s rows affected in %s") % (ret["rowcount"], ret["execution_time"]))
+                    sw.show_information(_("%(rowcount)s rows affected in %(time)s")
+                        % {'rowcount': ret["rowcount"], 'time': ret["execution_time"]})
 
                 if ret["cursor"] is not None:
                     ret["cursor"].close()
 
             except db.ConnectorError as e:
                 sw.show_information("%s" % (str(e)))
-
-            #except Exception, e:
-            #    pass
 
     def _execute_script(self, view):
         """ Run document as script """
@@ -293,10 +291,12 @@ class GSqlClient():
                     ret["cursor"].close()
 
                 if ret["selection"]:
-                    sw.append_information(_("\n(%s) - %s rows fetched in %s") % (n, ret["rowcount"], ret["execution_time"]))
+                    sw.append_information(_("\n(%(item)s) - %(rowcount)s rows fetched in %(time)s")
+                        % {'item': n, 'rowcount': ret["rowcount"], 'time': ret["execution_time"]})
 
                 else:
-                    sw.append_information(_("\n(%s) - %s rows affected in %s") % (n, ret["rowcount"], ret["execution_time"]))
+                    sw.append_information(_("\n(%(item)s) - %(rowcount)s rows affected in %(time)s")
+                        % {'item': n, 'rowcount': ret["rowcount"], 'time': ret["execution_time"]})
 
             except db.ConnectorError, e:
                 error_message = "\n(%s) - %s" % (n, str(e))
@@ -324,5 +324,3 @@ class GSqlClient():
         panel.remove_item(sw)
         sw.destroy()
         view.set_data('resultset_panel', None)
-
-

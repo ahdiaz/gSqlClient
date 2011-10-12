@@ -76,7 +76,8 @@ class ResultsetPanel(Gtk.HBox):
     def show_resultset(self, cursor, execution_time):
         self.treeview.load_cursor(cursor)
         buff = self.text_info.get_buffer()
-        buff.set_text(_("%s rows fetched in %s") % (cursor.rowcount, execution_time))
+        buff.set_text(_("%(rowcount)s rows fetched in %(time)s")
+            % {'rowcount': cursor.rowcount, 'time': execution_time})
         self.info_panel.hide()
         self.rset_panel.show()
         self.activate()
