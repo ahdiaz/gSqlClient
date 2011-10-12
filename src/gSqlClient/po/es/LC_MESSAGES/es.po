@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gsqlclient 1.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2011-10-12 11:12+0200\n"
+"POT-Creation-Date: 2011-10-12 11:24+0200\n"
 "PO-Revision-Date: 2011-08-19 21:38+0200\n"
 "Last-Translator: AHernandez <ahdiaz@gmail.com>\n"
 "Language-Team: Spanish\n"
@@ -18,8 +18,8 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
 #: ../src/gSqlClient/panels/ResultsetPanel.py:79
-msgid "%(rowcount) rows fetched in %(time)"
-msgstr "%(rowcount) filas obtenidas en %(time)"
+msgid "%(rowcount)s rows fetched in %(time)s"
+msgstr "%(rowcount)s filas obtenidas en %(time)s"
 
 #: ../src/gSqlClient/panels/ResultsetContextmenuPanel.py:36
 msgid "Copy cell value"
@@ -64,24 +64,24 @@ msgid "Connector \"%s\" is not valid."
 msgstr "El conector \"%s\" no es válido."
 
 #: ../src/gSqlClient/__init__.py:249
-msgid "%(rowcount) rows affected in %(time)"
-msgstr "%(rowcount) filas afectadas en %(time)"
+msgid "%(rowcount)s rows affected in %(time)s"
+msgstr "%(rowcount)s filas afectadas en %(time)s"
 
 #: ../src/gSqlClient/__init__.py:294
 msgid ""
 "\n"
-"(%(item)) - %(rowcount) rows fetched in %(time)"
+"(%(item)s) - %(rowcount)s rows fetched in %(time)s"
 msgstr ""
 "\n"
-"(%(item)) - %(rowcount) filas obtenidas en %(time)"
+"(%(item)s) - %(rowcount)s filas obtenidas en %(time)s"
 
-#: ../src/gSqlClient/__init__.py:297
+#: ../src/gSqlClient/__init__.py:298
 msgid ""
 "\n"
-"(%(item)) - %(rowcount) rows affected in %(time)"
+"(%(item)s) - %(rowcount)s rows affected in %(time)s"
 msgstr ""
 "\n"
-"(%(item)) - %(rowcount) filas afectadas en %(time)"
+"(%(item)s) - %(rowcount)s filas afectadas en %(time)s"
 
 #: ../src/gSqlClient/dialogs/ConnectionDialog.py:71
 #: ../src/gSqlClient/dialogs/ConnectionDialog.py:143

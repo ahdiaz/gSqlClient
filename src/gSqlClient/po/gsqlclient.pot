@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2011-10-12 11:12+0200\n"
+"POT-Creation-Date: 2011-10-12 11:24+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -18,7 +18,8 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 
 #: ../src/gSqlClient/panels/ResultsetPanel.py:79
-msgid "%(rowcount) rows fetched in %(time)"
+#, python-format
+msgid "%(rowcount)s rows fetched in %(time)s"
 msgstr ""
 
 #: ../src/gSqlClient/panels/ResultsetContextmenuPanel.py:36
@@ -64,19 +65,22 @@ msgid "Connector \"%s\" is not valid."
 msgstr ""
 
 #: ../src/gSqlClient/__init__.py:249
-msgid "%(rowcount) rows affected in %(time)"
+#, python-format
+msgid "%(rowcount)s rows affected in %(time)s"
 msgstr ""
 
 #: ../src/gSqlClient/__init__.py:294
+#, python-format
 msgid ""
 "\n"
-"(%(item)) - %(rowcount) rows fetched in %(time)"
+"(%(item)s) - %(rowcount)s rows fetched in %(time)s"
 msgstr ""
 
-#: ../src/gSqlClient/__init__.py:297
+#: ../src/gSqlClient/__init__.py:298
+#, python-format
 msgid ""
 "\n"
-"(%(item)) - %(rowcount) rows affected in %(time)"
+"(%(item)s) - %(rowcount)s rows affected in %(time)s"
 msgstr ""
 
 #: ../src/gSqlClient/dialogs/ConnectionDialog.py:71
