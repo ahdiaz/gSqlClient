@@ -14,6 +14,10 @@ pofile="${source_path}/po/${lang}/LC_MESSAGES/${lang}.po"
 pofilemerged="${source_path}/po/${lang}/LC_MESSAGES/${lang}.merged.po"
 mofile="${source_path}/po/${lang}/LC_MESSAGES/${appname}.mo"
 
+if [ ! -d "${source_path}/po/${lang}/LC_MESSAGES" ]; then
+    mkdir -p "${source_path}/po/${lang}/LC_MESSAGES"
+fi
+
 find $source_path -type f -name "*.py" > $potfilesin
 
 xgettext --language=Python --keyword=_ --output=$potfile -f $potfilesin
