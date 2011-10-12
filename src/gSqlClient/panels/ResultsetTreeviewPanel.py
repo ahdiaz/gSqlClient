@@ -21,7 +21,7 @@
 import os
 from gi.repository import GObject, Gtk, Gdk
 
-from .. import exporter
+from .. import utils
 from .. import dialogs
 from .. panels.ResultsetContextmenuPanel import ResultsetContextmenuPanel
 
@@ -37,7 +37,7 @@ class ResultsetTreeviewPanel(Gtk.TreeView):
         self.set_grid_lines(Gtk.TreeViewGridLines.HORIZONTAL)
         self.connect("button_press_event", self._on_treeview_clicked)
         self._contextmenu = None
-        self._exporter = exporter.Exporter()
+        self._exporter = utils.Exporter()
 
     def clear_treeview(self):
         self.set_model(None)

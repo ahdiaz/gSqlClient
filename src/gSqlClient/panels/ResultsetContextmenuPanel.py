@@ -20,7 +20,7 @@
 
 from gi.repository import GObject, Gtk
 
-from .. import exporter
+from .. import utils
 
 import gettext
 from gettext import gettext as _
@@ -47,9 +47,9 @@ class ResultsetContextmenuPanel(Gtk.Menu):
 
         copy_cell_item.connect("activate", treeview.cell_value_to_clipboard, path, column)
         copy_row_item.connect("activate", treeview.row_value_to_clipboard, path)
-        export_sql.connect("activate", treeview.export_grid, exporter.Exporter.FORMAT_SQL)
-        export_xml.connect("activate", treeview.export_grid, exporter.Exporter.FORMAT_XML)
-        export_csv.connect("activate", treeview.export_grid, exporter.Exporter.FORMAT_CSV)
+        export_sql.connect("activate", treeview.export_grid, utils.Exporter.FORMAT_SQL)
+        export_xml.connect("activate", treeview.export_grid, utils.Exporter.FORMAT_XML)
+        export_csv.connect("activate", treeview.export_grid, utils.Exporter.FORMAT_CSV)
 
         self.show_all()
 

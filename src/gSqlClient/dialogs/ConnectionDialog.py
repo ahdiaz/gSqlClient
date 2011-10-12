@@ -22,7 +22,6 @@ import os
 from gi.repository import GObject, Gtk
 
 from .. import utils, db
-from .. gscstore import GSCStore
 
 import gettext
 from gettext import gettext as _
@@ -32,7 +31,7 @@ class ConnectionDialog:
 
     def __init__(self, dbpool):
 
-        self.gstore = GSCStore()
+        self.gstore = utils.GSCStore()
         self.dbpool = dbpool
         self.selected = None
 

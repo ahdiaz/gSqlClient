@@ -20,11 +20,15 @@
 
 import os
 
+from exporter import Exporter
+from gscstore import GSCStore
+
+
 def get_data_file(*path_segments):
     return os.path.join(get_data_path(), *path_segments)
 
 def get_data_path():
-    path = os.path.join(os.path.dirname(__file__), 'data')
+    path = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'data')
 
     abs_data_path = os.path.abspath(path)
     if not os.path.exists(abs_data_path):
@@ -47,4 +51,4 @@ def get_ui_file(ui_file_name):
     return ui_filename
 
 def get_locale_path():
-    return os.path.join(os.path.dirname(__file__), 'po')
+    return os.path.join(os.path.dirname(os.path.dirname(__file__)), 'po')

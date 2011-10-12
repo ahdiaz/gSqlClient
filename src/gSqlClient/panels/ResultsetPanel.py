@@ -22,7 +22,6 @@ import os
 from gi.repository import GObject, Gtk, GdkPixbuf
 
 from .. import utils
-from .. import exporter
 from .. import dialogs
 from .. panels.ResultsetTreeviewPanel import ResultsetTreeviewPanel
 
