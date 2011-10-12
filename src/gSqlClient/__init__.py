@@ -130,7 +130,7 @@ class GSqlClient():
     def __init__(self, window):
         self.window = window
         self.dbpool = db.DbPool()
-        self.qparser = db.QueryParser()
+        self.qparser = utils.QueryParser()
 
     def on_tab_added(self, window, tab, data=None):
         pass

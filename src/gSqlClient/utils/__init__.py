@@ -20,6 +20,7 @@
 
 import os
 
+from qparser import QueryParser
 from exporter import Exporter
 from gscstore import GSCStore
 
