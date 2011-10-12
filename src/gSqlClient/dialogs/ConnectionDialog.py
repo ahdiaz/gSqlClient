@@ -1,6 +1,7 @@
+# -*- Mode: Python; coding: utf-8; indent-tabs-mode: nil; tab-width: 4 -*-
 #
-# gSqlClient plugin for Gedit allows to query MySQL databases.
-# Copyright (C) 2009 Antonio Hernandez Diaz <ahdiaz@gmail.com>
+# gSqlClient is a Python plugin that turns Gedit into a SQL client.
+# Copyright (C) 2009 Antonio Hernández Diaz <ahdiaz@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -15,8 +16,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
-# $Id: panels.py 62 2011-08-18 23:53:03Z ahdiaz $
-#
+
 
 import os
 from gi.repository import GObject, Gtk
