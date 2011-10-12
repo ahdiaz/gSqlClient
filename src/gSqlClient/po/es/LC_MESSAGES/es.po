@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gsqlclient 1.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2011-08-20 11:48+0200\n"
+"POT-Creation-Date: 2011-10-12 11:12+0200\n"
 "PO-Revision-Date: 2011-08-19 21:38+0200\n"
 "Last-Translator: AHernandez <ahdiaz@gmail.com>\n"
 "Language-Team: Spanish\n"
@@ -17,172 +17,170 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-#: panels/resultsetPanelTreeview.py:140
+#: ../src/gSqlClient/panels/ResultsetPanel.py:79
+msgid "%(rowcount) rows fetched in %(time)"
+msgstr "%(rowcount) filas obtenidas en %(time)"
+
+#: ../src/gSqlClient/panels/ResultsetContextmenuPanel.py:36
+msgid "Copy cell value"
+msgstr "Copiar el valor de la celda"
+
+#: ../src/gSqlClient/panels/ResultsetContextmenuPanel.py:37
+msgid "Copy row value"
+msgstr "Copiar el valor de la fila"
+
+#: ../src/gSqlClient/panels/ResultsetContextmenuPanel.py:38
+msgid "Export as SQL"
+msgstr "Exportar como SQL"
+
+#: ../src/gSqlClient/panels/ResultsetContextmenuPanel.py:39
+msgid "Export as XML"
+msgstr "Exportar como XML"
+
+#: ../src/gSqlClient/panels/ResultsetContextmenuPanel.py:40
+msgid "Export as CSV"
+msgstr "Exportar como CSV"
+
+#: ../src/gSqlClient/panels/ResultsetTreeviewPanel.py:174
 #, python-format
 msgid "File %s exists, overwrite?"
 msgstr "El fichero %s ya existe, ¿Desea sobreescribirlo?"
 
-#: panels/resultsetPanelContextmenu.py:8
-msgid "Copy cell value"
-msgstr "Copiar el valor de la celda"
-
-#: panels/resultsetPanelContextmenu.py:9
-msgid "Copy row value"
-msgstr "Copiar el valor de la fila"
-
-#: panels/resultsetPanelContextmenu.py:10
-msgid "Export as SQL"
-msgstr "Exportar como SQL"
-
-#: panels/resultsetPanelContextmenu.py:11
-msgid "Export as XML"
-msgstr "Exportar como XML"
-
-#: panels/resultsetPanelContextmenu.py:12
-msgid "Export as CSV"
-msgstr "Exportar como CSV"
-
-#: panels/resultsetPanel.py:74
-#, python-format
-msgid "%s rows fetched in %s"
-msgstr "%s filas obtenidas en %s"
-
-#: db/__init__.py:28
+#: ../src/gSqlClient/db/__init__.py:28
 msgid "(None)"
 msgstr "(Ninguno)"
 
-#: db/__init__.py:98 db/__init__.py:102
+#: ../src/gSqlClient/db/__init__.py:98 ../src/gSqlClient/db/__init__.py:102
 msgid "The driver cannot be empty."
 msgstr "El driver no puede estar vacío."
 
-#: db/__init__.py:263 db/__init__.py:266
+#: ../src/gSqlClient/db/__init__.py:263 ../src/gSqlClient/db/__init__.py:266
 msgid "This connector is used only from the treeview."
 msgstr "Este conector es usado solo desde el árbol."
 
-#: db/__init__.py:376
+#: ../src/gSqlClient/db/__init__.py:293
 #, python-format
 msgid "Connector \"%s\" is not valid."
 msgstr "El conector \"%s\" no es válido."
 
-#: __init__.py:245
-#, python-format
-msgid "%s rows affected in %s"
-msgstr "%s filas afectadas en %s"
+#: ../src/gSqlClient/__init__.py:249
+msgid "%(rowcount) rows affected in %(time)"
+msgstr "%(rowcount) filas afectadas en %(time)"
 
-#: __init__.py:297
-#, python-format
+#: ../src/gSqlClient/__init__.py:294
 msgid ""
 "\n"
-"(%s) - %s rows fetched in %s"
+"(%(item)) - %(rowcount) rows fetched in %(time)"
 msgstr ""
 "\n"
-"(%s) - %s filas obtenidas en %s"
+"(%(item)) - %(rowcount) filas obtenidas en %(time)"
 
-#: __init__.py:300
-#, python-format
+#: ../src/gSqlClient/__init__.py:297
 msgid ""
 "\n"
-"(%s) - %s rows affected in %s"
+"(%(item)) - %(rowcount) rows affected in %(time)"
 msgstr ""
 "\n"
-"(%s) - %s filas afectadas en %s"
+"(%(item)) - %(rowcount) filas afectadas en %(time)"
 
-#: dialogs/ConnectionDialog.py:72 dialogs/ConnectionDialog.py:144
+#: ../src/gSqlClient/dialogs/ConnectionDialog.py:71
+#: ../src/gSqlClient/dialogs/ConnectionDialog.py:143
 msgid "Connections"
 msgstr "Conexiones"
 
-#: dialogs/ConnectionDialog.py:74
+#: ../src/gSqlClient/dialogs/ConnectionDialog.py:73
 msgid "Driver"
 msgstr "Driver"
 
-#: dialogs/ConnectionDialog.py:75
+#: ../src/gSqlClient/dialogs/ConnectionDialog.py:74
 msgid "Host"
 msgstr "Host"
 
-#: dialogs/ConnectionDialog.py:76
+#: ../src/gSqlClient/dialogs/ConnectionDialog.py:75
 msgid "Port"
 msgstr "Puerto"
 
-#: dialogs/ConnectionDialog.py:77
+#: ../src/gSqlClient/dialogs/ConnectionDialog.py:76
 msgid "Socket"
 msgstr "Socket"
 
-#: dialogs/ConnectionDialog.py:78
+#: ../src/gSqlClient/dialogs/ConnectionDialog.py:77
 msgid "User"
 msgstr "Usuario"
 
-#: dialogs/ConnectionDialog.py:79
+#: ../src/gSqlClient/dialogs/ConnectionDialog.py:78
 msgid "Password"
 msgstr "Contraseña"
 
-#: dialogs/ConnectionDialog.py:80
+#: ../src/gSqlClient/dialogs/ConnectionDialog.py:79
 msgid "Schema"
 msgstr "Esquema"
 
-#: dialogs/ConnectionDialog.py:82
+#: ../src/gSqlClient/dialogs/ConnectionDialog.py:81
 msgid "Add"
 msgstr "Añadir"
 
-#: dialogs/ConnectionDialog.py:83
+#: ../src/gSqlClient/dialogs/ConnectionDialog.py:82
 msgid "Remove"
 msgstr "Eliminar"
 
-#: dialogs/ConnectionDialog.py:84
+#: ../src/gSqlClient/dialogs/ConnectionDialog.py:83
 msgid "Save"
 msgstr "Guardar"
 
-#: dialogs/ConnectionDialog.py:85
+#: ../src/gSqlClient/dialogs/ConnectionDialog.py:84
 msgid "Connect"
 msgstr "Conectar"
 
-#: dialogs/ConnectionDialog.py:86
+#: ../src/gSqlClient/dialogs/ConnectionDialog.py:85
 msgid "Disconnect"
 msgstr "Desconectar"
 
-#: dialogs/ConnectionDialog.py:87 dialogs/ConnectionErrorDialog.py:6
+#: ../src/gSqlClient/dialogs/ConnectionDialog.py:86
+#: ../src/gSqlClient/dialogs/ConnectionErrorDialog.py:32
 msgid "Close"
 msgstr "Cerrar"
 
-#: dialogs/ConnectionDialog.py:188
+#: ../src/gSqlClient/dialogs/ConnectionDialog.py:187
 msgid "Stored"
 msgstr "Guardadas"
 
-#: dialogs/ConnectionDialog.py:196
+#: ../src/gSqlClient/dialogs/ConnectionDialog.py:195
 msgid "Opened"
 msgstr "Abiertas"
 
-#: dialogs/ConnectionDialog.py:199
+#: ../src/gSqlClient/dialogs/ConnectionDialog.py:198
 msgid "(Open new connection)"
 msgstr "(Abrir nueva conexión)"
 
-#: dialogs/ScriptErrorDialog.py:5
+#: ../src/gSqlClient/dialogs/ScriptErrorDialog.py:35
 msgid "Script error"
 msgstr "Error en el script"
 
-#: dialogs/ScriptErrorDialog.py:6
+#: ../src/gSqlClient/dialogs/ScriptErrorDialog.py:36
 msgid "Ignore"
 msgstr "Ignorar"
 
-#: dialogs/ScriptErrorDialog.py:7
+#: ../src/gSqlClient/dialogs/ScriptErrorDialog.py:37
 msgid "Ignore all"
 msgstr "Ignorar todo"
 
-#: dialogs/ScriptErrorDialog.py:8
+#: ../src/gSqlClient/dialogs/ScriptErrorDialog.py:38
 msgid "Stop script"
 msgstr "Detener script"
 
-#: dialogs/FileExistsDialog.py:5
+#: ../src/gSqlClient/dialogs/FileExistsDialog.py:31
 msgid "File exists"
 msgstr "El fichero existe"
 
-#: dialogs/FileExistsDialog.py:6
+#: ../src/gSqlClient/dialogs/FileExistsDialog.py:32
 msgid "Yes"
 msgstr "Sí"
 
-#: dialogs/FileExistsDialog.py:7
+#: ../src/gSqlClient/dialogs/FileExistsDialog.py:33
 msgid "Cancel"
 msgstr "Cancelar"
 
-#: dialogs/ConnectionErrorDialog.py:5
+#: ../src/gSqlClient/dialogs/ConnectionErrorDialog.py:31
 msgid "Connection error"
 msgstr "Error de conexión"
