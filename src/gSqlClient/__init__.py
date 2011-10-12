@@ -201,7 +201,7 @@ class GSqlClient():
                 self.dbpool.append(dbc)
 
                 panel = self.window.get_bottom_panel()
-                rset = panels.ResultsetPanel(panel)
+                rset = panels.ResultsetPanel(dbc.hash, panel)
 
                 view.set_data('dbc', dbc)
                 view.set_data('resultset_panel', rset)

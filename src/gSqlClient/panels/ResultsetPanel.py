@@ -28,7 +28,7 @@ from .. panels.ResultsetTreeviewPanel import ResultsetTreeviewPanel
 
 class ResultsetPanel(Gtk.HBox):
 
-    def __init__(self, panel):
+    def __init__(self, id, panel):
 
         GObject.GObject.__init__(self)
         self._panel = panel
@@ -38,8 +38,7 @@ class ResultsetPanel(Gtk.HBox):
         pxb = pxb.scale_simple(16, 16, GdkPixbuf.InterpType.BILINEAR)
         image.set_from_pixbuf(pxb)
 
-        # TODO: What are the parameters of add_item?
-        panel.add_item(self, '?', 'Resultset', image)
+        panel.add_item(self, id, 'Resultset', image)
 
         self.builder = Gtk.Builder()
         self.builder.add_from_file(utils.get_ui_file('ResultsetPanel'))
