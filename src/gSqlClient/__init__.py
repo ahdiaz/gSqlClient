@@ -31,8 +31,6 @@ from gettext import gettext as _
 gettext.bindtextdomain('gsqlclient', utils.get_locale_path())
 
 
-__gladeFile__ = os.path.join(os.path.dirname(__file__), 'gsqlclient.glade')
-
 class GSqlClientPlugin(GObject.Object, Gedit.WindowActivatable):
 
     __gtype_name__ = "GSqlClientPlugin"
