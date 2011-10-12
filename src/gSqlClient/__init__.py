@@ -309,10 +309,10 @@ class GSqlClient():
                     error_dialog_ret = error_dialog.run()
                     error_dialog.destroy()
 
-                    if error_dialog_ret == 1:
+                    if error_dialog_ret == dialogs.ScriptErrorDialog.OPT_IGNORE_ALL:
                         dialog_ret = dialogs.ScriptDialog.OPT_IGNORE
 
-                    elif error_dialog_ret == 0:
+                    elif error_dialog_ret == dialogs.ScriptErrorDialog.OPT_STOP:
                         dialog_ret = dialogs.ScriptDialog.OPT_STOP
 
                 if dialog_ret == dialogs.ScriptDialog.OPT_STOP:
