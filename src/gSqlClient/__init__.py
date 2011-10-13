@@ -147,7 +147,7 @@ class GSqlClient():
 
     def on_disconnect_view(self, view):
 
-        self._db_disconnect(view)
+        self.close_connection(view)
 
     def on_key_press_event(self, view, event):
         """ Manage key events actions. """
@@ -167,7 +167,7 @@ class GSqlClient():
         # CTRL + SHIFT + C
         # Show the connection dialog
         if event.keyval == Gdk.KEY_C:
-            self._db_connect(view)
+            self.open_connection_dialog(view)
             return True
 
         # CTRL + SHIFT + R
@@ -178,45 +178,46 @@ class GSqlClient():
 
         return False
 
-    def _db_connect(self, view):
-
-        dbc = view.get_data('dbc')
+    def open_connection_dialog(self, view):
 
         d = dialogs.ConnectionDialog(self.dbpool)
+        d.connect('connect', self.on_connection_opened)
+        d.connect('disconnect', self.on_connection_closed)
         d.dialog.set_transient_for(self.window)
 
-        result, new_dbc = d.run(dbc)
+        result = d.run()
 
-        if result == 2:
-            self._db_disconnect(view)
+    def on_connection_opened(self, dialog, connection):
 
-        elif result == 1:
+        view = self.window.get_active_view()
+        self.close_connection(view)
 
-            self._db_disconnect(view)
-            dbc = new_dbc
+        try:
 
-            try:
+            connection.connect()
+            self.dbpool.append(connection)
 
-                dbc.connect()
-                self.dbpool.append(dbc)
+            panel = self.window.get_bottom_panel()
+            rset = panels.ResultsetPanel(connection.hash, panel)
 
-                panel = self.window.get_bottom_panel()
-                rset = panels.ResultsetPanel(dbc.hash, panel)
+            view.set_data('dbc', connection)
+            view.set_data('resultset_panel', rset)
 
-                view.set_data('dbc', dbc)
-                view.set_data('resultset_panel', rset)
+        except db.ConnectorError as e:
+            error_dialog = dialogs.ConnectionErrorDialog("\n  %s: %s  \n" % (type(e), str(e)), self.window)
+            error_dialog.run()
+            error_dialog.destroy()
 
-            except db.ConnectorError as e:
-                error_dialog = dialogs.ConnectionErrorDialog("\n  %s: %s  \n" % (type(e), str(e)), self.window)
-                error_dialog.run()
-                error_dialog.destroy()
+    def on_connection_closed(self, dialog, connection):
+        view = self.window.get_active_view()
+        self.close_connection(view)
 
-    def _db_disconnect(self, view):
-
+    def close_connection(self, view):
         dbc = view.get_data('dbc')
         if dbc != None and dbc.is_connected():
             self.dbpool.remove(dbc)
             dbc.close()
+            dbc = None
             self._destroy_resultset_view(view)
             view.set_data('dbc', None)
 

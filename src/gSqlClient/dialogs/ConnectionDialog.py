@@ -27,9 +27,24 @@ import gettext
 from gettext import gettext as _
 gettext.textdomain('gsqlclient')
 
-class ConnectionDialog:
+class ConnectionDialog(GObject.GObject):
+
+    __gsignals__ = {
+        'connect': (
+            GObject.SignalFlags.RUN_LAST,
+            None,
+            (GObject.TYPE_PYOBJECT,)
+        ),
+        'disconnect': (
+            GObject.SignalFlags.RUN_LAST,
+            None,
+            (GObject.TYPE_PYOBJECT,)
+        )
+    }
 
     def __init__(self, dbpool):
+
+        GObject.GObject.__init__(self)
 
         self.gstore = utils.GSCStore()
         self.dbpool = dbpool
@@ -81,21 +96,10 @@ class ConnectionDialog:
         self.btnDisconnect.set_label(_('Disconnect'))
         self.btnClose.set_label(_('Close'))
 
-    def run(self, active_connection):
-
-        cnn = None
+    def run(self):
         result = self.dialog.run()
-
-        if result == 1:
-            try:
-                options = self.get_options()
-                cnn = db.get_connector(options)
-
-            except db.InvalidConnectorError, e:
-                pass
-
         self.dialog.destroy()
-        return result, cnn
+        return result
 
     def load_drivers(self):
 
@@ -171,7 +175,13 @@ class ConnectionDialog:
 
     def _cell_value(self, column, cell, model, iter, data=None):
         cnn = model.get_value(iter, 0)
-        cell.set_property('text', cnn.get_connection_string())
+        try:
+            text = cnn.get_connection_string()
+
+        except Exception as e:
+            text = cnn
+
+        cell.set_property('text', text)
 
     def update_treeview(self):
 
@@ -383,16 +393,28 @@ class ConnectionDialog:
         except db.InvalidConnectorError, e:
             pass
 
+    def on_btnConnect_clicked(self, widget):
+        try:
+            options = self.get_options()
+            cnn = db.get_connector(options)
+
+        except db.InvalidConnectorError as e:
+            cnn = None
+
+        self.emit('connect', cnn)
+        self.dialog.response(1)
+
     def on_btnDisconnect_clicked(self, widget):
         model = self.treeview.get_model()
         cnn = model.get_value(self.selected, 0)
         model.remove(self.selected)
-        self.dbpool.remove(cnn)
-        cnn.close()
-        cnn = None
+        #self.dbpool.remove(cnn)
+        #cnn.close()
+        #cnn = None
         self.selected = None
         self.btnDisconnect.set_sensitive(False)
         self.update_form()
+        self.emit('disconnect', cnn)
 
     def on_btnAdd_clicked(self, widget):
         # Append a new row and expand the treeview,
