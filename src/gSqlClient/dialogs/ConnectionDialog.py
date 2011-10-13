@@ -408,9 +408,6 @@ class ConnectionDialog(GObject.GObject):
         model = self.treeview.get_model()
         cnn = model.get_value(self.selected, 0)
         model.remove(self.selected)
-        #self.dbpool.remove(cnn)
-        #cnn.close()
-        #cnn = None
         self.selected = None
         self.btnDisconnect.set_sensitive(False)
         self.update_form()
