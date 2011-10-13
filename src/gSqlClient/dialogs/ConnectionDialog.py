@@ -69,7 +69,6 @@ class ConnectionDialog:
 
     def translate(self):
         self.dialog.set_title(_('Connections'))
-
         self.lblDriver.set_text(_('Driver'))
         self.lblHost.set_text(_('Host'))
         self.lblPort.set_text(_('Port'))
@@ -77,9 +76,6 @@ class ConnectionDialog:
         self.lblUser.set_text(_('User'))
         self.lblPasswd.set_text(_('Password'))
         self.lblSchema.set_text(_('Schema'))
-
-        self.btnAdd.set_label(_('Add'))
-        self.btnRemove.set_label(_('Remove'))
         self.btnSave.set_label(_('Save'))
         self.btnConnect.set_label(_('Connect'))
         self.btnDisconnect.set_label(_('Disconnect'))
