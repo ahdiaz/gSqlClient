@@ -7,3 +7,4 @@ Description=gSqlClient turns Gedit into a SQL client.
 Authors=Antonio Hernández Díaz <ahdiaz@gmail.com>
 Copyright=Copyright (C) 2009 Antonio Hernández Díaz <ahdiaz@gmail.com>
 Website=http://ahdiaz.euler.es/gsqlclient
+Version=1.0
