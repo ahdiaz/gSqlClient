@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+    <meta charset='utf-8'>
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <meta name="description" content="GSqlClient : GSqlClient is a Python plugin that turns Gedit into a lightweight SQL client.">
+
+    <link rel="stylesheet" type="text/css" media="screen" href="stylesheets/stylesheet.css">
+
+    <title>GSqlClient</title>
+  </head>
+
+  <body>
+
+    <!-- HEADER -->
+    <div id="header_wrap" class="outer">
+        <header class="inner">
+          <a id="forkme_banner" href="https://github.com/ahdiaz/gSqlClient">View on GitHub</a>
+
+          <h1 id="project_title">GSqlClient</h1>
+          <h2 id="project_tagline">GSqlClient is a Python plugin that turns Gedit into a lightweight SQL client.</h2>
+
+            <section id="downloads">
+              <a class="zip_download_link" href="https://github.com/ahdiaz/gSqlClient/zipball/master">Download this project as a .zip file</a>
+              <a class="tar_download_link" href="https://github.com/ahdiaz/gSqlClient/tarball/master">Download this project as a tar.gz file</a>
+            </section>
+        </header>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <div id="main_content_wrap" class="outer">
+      <section id="main_content" class="inner">
+        <h3>
+<a id="description" class="anchor" href="#description" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Description</h3>
+
+<p>gSqlClient is a Python plugin that turns Gedit into a SQL client.
+Currently MySQL, PostgreSQL, SQLite and SQLServer databases are supported.</p>
+
+<h3>
+<a id="requirements" class="anchor" href="#requirements" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Requirements</h3>
+
+<p>You will need to install only the drivers you want to use:</p>
+
+<ul>
+<li>MySQL:    MySQLdb, <a href="http://mysql-python.sourceforge.net/MySQLdb.html">http://mysql-python.sourceforge.net/MySQLdb.html</a>
+</li>
+<li>PostgreSQL:   Psycopg, <a href="http://www.initd.org/psycopg/">http://www.initd.org/psycopg/</a>
+</li>
+<li>SQLite:   pysqlite, <a href="http://code.google.com/p/pysqlite/">http://code.google.com/p/pysqlite/</a>
+</li>
+<li>SQLServer:    Pymssql, <a href="http://code.google.com/p/pymssql/">http://code.google.com/p/pymssql/</a>
+</li>
+</ul>
+
+<p>It is possible that your Linux distribution has precompiled packages available.</p>
+
+<h3>
+<a id="installation" class="anchor" href="#installation" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Installation</h3>
+
+<ol>
+<li>Extract the content of the tarball under $HOME/.gnome2/gedit/plugins/ directory.</li>
+<li>(Re)start Gedit.</li>
+<li>Go to Edit-&gt;Preferences-&gt;Plugins and check the box for gSqlClient.</li>
+</ol>
+
+<h3>
+<a id="usage" class="anchor" href="#usage" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Usage</h3>
+
+<p>Create a new document and press CTRL+SHIFT+C, you will see the connection dialog. Fill the form and press the "Connect" button.
+Write some queries and be sure to separate them by empty lines, put the cursor over one of the queries and
+press CTRL+ENTER, you should see a panel with the resultset. If you want to disconnect from the server press CTRL+SHIFT+C
+again and you will see the "Disconnect" button.</p>
+
+<p>The query separator is an empty line so you don't need a semicolon after the query, this way allows you to have many
+queries on the same document. If you want to execute only part of a query you can select the part you are interested
+on and press CTRL+ENTER, the plugin will only execute the selection.</p>
+
+<p>You can execute the entire document as a script pressing CTRL+SHIFT+R.
+When pressing CTRL+SHIFT+R for running a script, a new dialog appears with options for handle query errors.</p>
+
+<p>There is a contextual menu with options for copy grid values and export resultsets as SQL, XML or CSV
+formats, right click on the resultset grid and select the option you want.</p>
+
+<p>Remember that you can have one different connection on each Gedit tab so you can query different databases from the
+same instance of Gedit.</p>
+      </section>
+    </div>
+
+    <!-- FOOTER  -->
+    <div id="footer_wrap" class="outer">
+      <footer class="inner">
+        <p class="copyright">GSqlClient maintained by <a href="https://github.com/ahdiaz">ahdiaz</a></p>
+        <p>Published with <a href="https://pages.github.com">GitHub Pages</a></p>
+      </footer>
+    </div>
+
+    
+
+  </body>
+</html>
